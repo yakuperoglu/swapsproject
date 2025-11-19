@@ -1,0 +1,1 @@
+// Bu dosya artık kullanılmıyor - tüm auth mantığı index.js içinde

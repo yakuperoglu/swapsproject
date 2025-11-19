@@ -1,0 +1,132 @@
+.about-page-container {
+  padding: 4rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #333;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
+}
+
+.about-section, .team-section {
+  margin-bottom: 4rem;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.about-section h1 {
+  font-size: 3rem;
+  color: #333;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+}
+
+.about-section h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+.about-section p {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #555;
+  max-width: 900px;
+}
+
+.team-section h2 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 2.5rem;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+}
+
+.team-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+.team-members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.team-member-card {
+  background: #fff;
+  border: none;
+  border-radius: 15px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-member-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.team-member-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.team-member-card:hover::before {
+  transform: scaleX(1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .about-page-container {
+    padding: 2rem 1.5rem;
+  }
+  
+  .about-section h1 {
+    font-size: 2.2rem;
+  }
+  
+  .team-section h2 {
+    font-size: 2rem;
+  }
+  
+  .team-members-grid {
+    grid-template-columns: 1fr;
+  }
+}

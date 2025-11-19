@@ -1,0 +1,24 @@
+.footer {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: #fff;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.footer p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+  letter-spacing: 0.5px;
+}
+
+.footer::before {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  margin: 0 auto 1.5rem;
+  border-radius: 2px;
+}
