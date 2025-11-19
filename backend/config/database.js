@@ -11,6 +11,10 @@ const dbConfig = {
     max: 10, // connection pool size
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 60000,
+    // Render PostgreSQL için SSL gerekli
+    ssl: process.env.DB_HOST && process.env.DB_HOST.includes('render.com') 
+        ? { rejectUnauthorized: false } 
+        : false,
 };
 
 // Connection pool oluştur
@@ -33,6 +37,15 @@ async function initializeDatabase() {
     } catch (error) {
         console.error('❌ PostgreSQL bağlantı hatası:', error.message);
         console.log('⚠️  In-memory veritabanı modu aktif olacak');
+        // Hatalı pool referansını temizle ki uygulama yanlışlıkla PostgreSQL kullanmaya çalışmasın
+        if (pool) {
+            try {
+                await pool.end();
+            } catch (closeError) {
+                console.warn('Pool kapatılırken hata oluştu:', closeError.message);
+            }
+        }
+        pool = null;
         return null;
     }
 }
