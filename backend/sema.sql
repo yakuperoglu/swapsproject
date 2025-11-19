@@ -1,36 +1,36 @@
--- MySQL için SwapS veritabanı şeması
--- NOT: PostgreSQL yerine MySQL kullanıyoruz
+-- PostgreSQL için SwapS veritabanı şeması
 
 -- ÖNCE: Her şeyi temizle (Eğer yarım yamalak oluştularsa diye)
 -- (Ters sırada silmemiz gerekir: Önce Mesajları, sonra Maçları, sonra Projeleri...)
-DROP TABLE IF EXISTS Messages;
-DROP TABLE IF EXISTS Matches;
-DROP TABLE IF EXISTS Projects;
-DROP TABLE IF EXISTS Yetenekler;
-DROP TABLE IF EXISTS Kullanicilar;
+DROP TABLE IF EXISTS Messages CASCADE;
+DROP TABLE IF EXISTS Matches CASCADE;
+DROP TABLE IF EXISTS Projects CASCADE;
+DROP TABLE IF EXISTS Yetenekler CASCADE;
+DROP TABLE IF EXISTS Kullanicilar CASCADE;
 
 -- ŞİMDİ: Her şeyi sıfırdan ve doğru sırada oluştur
 
 -- 1. Kullanicilar Tablosu
 CREATE TABLE Kullanicilar (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     kullanici_adi VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     sifre VARCHAR(255) NOT NULL,
-    rol ENUM('User', 'Admin') NOT NULL DEFAULT 'User',
+    rol VARCHAR(20) NOT NULL DEFAULT 'User' CHECK (rol IN ('User', 'Admin')),
     olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
 -- 2. Yetenekler Tablosu (Admin panelden yönetilir)
 CREATE TABLE Yetenekler (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     category VARCHAR(50) NOT NULL,
     olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    UNIQUE KEY unique_skill (name, category),
-    INDEX idx_category (category)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT unique_skill UNIQUE (name, category)
+);
+
+CREATE INDEX idx_category ON Yetenekler(category);
 
 -- Varsayılan yetenekleri ekle
 INSERT INTO Yetenekler (name, category) VALUES
@@ -57,8 +57,8 @@ INSERT INTO Yetenekler (name, category) VALUES
 
 -- 3. Projects Tablosu
 CREATE TABLE Projects (
-    project_id INT AUTO_INCREMENT PRIMARY KEY,
-    owner_id INT NOT NULL,
+    project_id SERIAL PRIMARY KEY,
+    owner_id INTEGER NOT NULL,
     title VARCHAR(100) NOT NULL,
     description TEXT,
     olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -67,13 +67,13 @@ CREATE TABLE Projects (
         FOREIGN KEY(owner_id) 
         REFERENCES Kullanicilar(id)
         ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 
 -- 4. Matches Tablosu
 CREATE TABLE Matches (
-    match_id INT AUTO_INCREMENT PRIMARY KEY,
-    applicant_id INT NOT NULL,
-    project_id INT NOT NULL,
+    match_id SERIAL PRIMARY KEY,
+    applicant_id INTEGER NOT NULL,
+    project_id INTEGER NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'Pending',
     olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
@@ -87,14 +87,14 @@ CREATE TABLE Matches (
         REFERENCES Projects(project_id)
         ON DELETE CASCADE,
         
-    UNIQUE KEY unique_application (applicant_id, project_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    CONSTRAINT unique_application UNIQUE (applicant_id, project_id)
+);
 
 -- 5. Messages Tablosu
 CREATE TABLE Messages (
-    message_id INT AUTO_INCREMENT PRIMARY KEY,
-    sender_id INT NOT NULL,
-    receiver_id INT NOT NULL,
+    message_id SERIAL PRIMARY KEY,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
     content TEXT NOT NULL,
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -106,9 +106,9 @@ CREATE TABLE Messages (
     CONSTRAINT fk_receiver
         FOREIGN KEY(receiver_id) 
         REFERENCES Kullanicilar(id)
-        ON DELETE CASCADE,
-        
-    INDEX idx_sender (sender_id),
-    INDEX idx_receiver (receiver_id),
-    INDEX idx_timestamp (timestamp)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ON DELETE CASCADE
+);
+
+CREATE INDEX idx_sender ON Messages(sender_id);
+CREATE INDEX idx_receiver ON Messages(receiver_id);
+CREATE INDEX idx_timestamp ON Messages(timestamp);

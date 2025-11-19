@@ -1,0 +1,64 @@
+services:
+  # Backend API Server
+  - type: web
+    name: swaps-backend
+    env: node
+    region: frankfurt
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node index.js
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DB_HOST
+        fromDatabase:
+          name: swaps-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: swaps-postgres
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: swaps-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: swaps-postgres
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: swaps-postgres
+          property: database
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://swaps.com.tr
+
+  # Frontend React Application
+  - type: web
+    name: swaps-frontend
+    env: static
+    region: frankfurt
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: swaps-postgres
+    databaseName: swaps_db
+    user: swaps_user
+    region: frankfurt
+    plan: free
+

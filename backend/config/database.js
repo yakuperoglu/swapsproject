@@ -1,21 +1,16 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-// Database connection configuration
+// PostgreSQL connection configuration
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
+    port: parseInt(process.env.DB_PORT) || 5432,
+    user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'swaps_db',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    enableKeepAlive: true,
-    keepAliveInitialDelay: 0,
-    // Railway MySQL için önemli ayarlar
-    connectTimeout: 60000,
-    charset: 'utf8mb4'
+    max: 10, // connection pool size
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 60000,
 };
 
 // Connection pool oluştur
@@ -24,19 +19,19 @@ let pool = null;
 // Database bağlantısını başlat
 async function initializeDatabase() {
     try {
-        pool = mysql.createPool(dbConfig);
+        pool = new Pool(dbConfig);
         
         // Bağlantıyı test et
-        const connection = await pool.getConnection();
-        console.log('✅ MySQL veritabanına başarıyla bağlanıldı!');
+        const client = await pool.connect();
+        console.log('✅ PostgreSQL veritabanına başarıyla bağlanıldı!');
         console.log(`📊 Database: ${dbConfig.database}`);
         console.log(`🌐 Host: ${dbConfig.host}`);
         
-        connection.release();
+        client.release();
         
         return pool;
     } catch (error) {
-        console.error('❌ MySQL bağlantı hatası:', error.message);
+        console.error('❌ PostgreSQL bağlantı hatası:', error.message);
         console.log('⚠️  In-memory veritabanı modu aktif olacak');
         return null;
     }
@@ -50,36 +45,37 @@ async function createSchema() {
     }
 
     try {
-        const connection = await pool.getConnection();
-        
         // Kullanicilar tablosu
-        await connection.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS Kullanicilar (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 kullanici_adi VARCHAR(50) NOT NULL UNIQUE,
                 email VARCHAR(100) NOT NULL UNIQUE,
                 sifre VARCHAR(255) NOT NULL,
-                rol ENUM('User', 'Admin') NOT NULL DEFAULT 'User',
+                rol VARCHAR(20) NOT NULL DEFAULT 'User' CHECK (rol IN ('User', 'Admin')),
                 olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            )
         `);
         
         // Yetenekler tablosu
-        await connection.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS Yetenekler (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
                 category VARCHAR(50) NOT NULL,
                 olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE KEY unique_skill (name, category),
-                INDEX idx_category (category)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                CONSTRAINT unique_skill UNIQUE (name, category)
+            )
+        `);
+        
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_category ON Yetenekler(category)
         `);
         
         // Varsayılan yetenekleri ekle (eğer yoksa)
-        const [rows] = await connection.query('SELECT COUNT(*) as count FROM Yetenekler');
-        if (rows[0].count === 0) {
-            await connection.query(`
+        const result = await pool.query('SELECT COUNT(*) as count FROM Yetenekler');
+        if (parseInt(result.rows[0].count) === 0) {
+            await pool.query(`
                 INSERT INTO Yetenekler (name, category) VALUES
                 ('İngilizce', 'Dil'),
                 ('Fransızca', 'Dil'),
@@ -106,10 +102,10 @@ async function createSchema() {
         }
         
         // Projects tablosu
-        await connection.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS Projects (
-                project_id INT AUTO_INCREMENT PRIMARY KEY,
-                owner_id INT NOT NULL,
+                project_id SERIAL PRIMARY KEY,
+                owner_id INTEGER NOT NULL,
                 title VARCHAR(100) NOT NULL,
                 description TEXT,
                 olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -117,15 +113,15 @@ async function createSchema() {
                     FOREIGN KEY(owner_id) 
                     REFERENCES Kullanicilar(id)
                     ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            )
         `);
         
         // Matches tablosu
-        await connection.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS Matches (
-                match_id INT AUTO_INCREMENT PRIMARY KEY,
-                applicant_id INT NOT NULL,
-                project_id INT NOT NULL,
+                match_id SERIAL PRIMARY KEY,
+                applicant_id INTEGER NOT NULL,
+                project_id INTEGER NOT NULL,
                 status VARCHAR(20) NOT NULL DEFAULT 'Pending',
                 olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 CONSTRAINT fk_applicant
@@ -136,16 +132,16 @@ async function createSchema() {
                     FOREIGN KEY(project_id) 
                     REFERENCES Projects(project_id)
                     ON DELETE CASCADE,
-                UNIQUE KEY unique_application (applicant_id, project_id)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                CONSTRAINT unique_application UNIQUE (applicant_id, project_id)
+            )
         `);
         
         // Messages tablosu
-        await connection.query(`
+        await pool.query(`
             CREATE TABLE IF NOT EXISTS Messages (
-                message_id INT AUTO_INCREMENT PRIMARY KEY,
-                sender_id INT NOT NULL,
-                receiver_id INT NOT NULL,
+                message_id SERIAL PRIMARY KEY,
+                sender_id INTEGER NOT NULL,
+                receiver_id INTEGER NOT NULL,
                 content TEXT NOT NULL,
                 timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 CONSTRAINT fk_sender
@@ -155,14 +151,20 @@ async function createSchema() {
                 CONSTRAINT fk_receiver
                     FOREIGN KEY(receiver_id) 
                     REFERENCES Kullanicilar(id)
-                    ON DELETE CASCADE,
-                INDEX idx_sender (sender_id),
-                INDEX idx_receiver (receiver_id),
-                INDEX idx_timestamp (timestamp)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    ON DELETE CASCADE
+            )
         `);
         
-        connection.release();
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_sender ON Messages(sender_id)
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_receiver ON Messages(receiver_id)
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_timestamp ON Messages(timestamp)
+        `);
+        
         console.log('✅ Veritabanı şeması başarıyla oluşturuldu!');
         return true;
         
@@ -191,4 +193,3 @@ module.exports = {
     getConnection,
     closeConnection
 };
-

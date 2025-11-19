@@ -48,7 +48,7 @@ Monorepo düzeni ile `backend` ve `frontend` dizinleri:
 - Git
 - Node.js 18+ ve paket yöneticisi (npm / yarn / pnpm) veya
 - Python/Java/Go gibi alternatif backend yığını (seçime göre güncellenecek)
-- Bir veritabanı (MySQL önerilir) – opsiyonel, yığındaki karara göre
+- Bir veritabanı (PostgreSQL önerilir) – opsiyonel, yığındaki karara göre
 
 ## Kurulum
 
@@ -104,7 +104,7 @@ NODE_ENV=development
 
 # Backend
 PORT=4000
-DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/swaps
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/swaps
 JWT_SECRET=please_change_me
 
 # Frontend
@@ -137,14 +137,46 @@ npm start         # Üretim çalıştırma
 
 ## Dağıtım (Deploy) Notları
 
-- Hedef platform: Vercel (frontend kesin; backend henüz kararlaştırılmadı)
-- Ortam değişkenleri: Vercel Dashboard > Project Settings > Environment altında `DATABASE_URL`, `JWT_SECRET`, `VITE_API_BASE_URL` değerlerini üretim/staging için tanımlayın
-- MySQL: Üretim veritabanınızı (örn. PlanetScale, Railway, Aiven veya kendi MySQL sunucunuz) hazırlayın ve `DATABASE_URL`'i MySQL bağlantısına göre ayarlayın (`mysql://USER:PASSWORD@HOST:3306/DB_NAME`)
-- Frontend: `VITE_API_BASE_URL` değerini Vercel'de barınan backend URL'sine (veya geçici olarak local/placeholder) işaret edecek şekilde ayarlayın
-- Backend seçenekleri:
-  - Node.js tabanlı sunucu ve Vercel Serverless Functions ile monorepo içinde dağıtım
-  - Alternatif bir barındırma (Render/Fly/Heroku/Dokku) ve frontend'in Vercel üzerinde kalması
-- CI/CD: Vercel Git entegrasyonu ile PR önizlemeleri ve main dalı üretim deploy akışını etkinleştirin
+### Backend + Database: Render.com
+- **Backend Web Service:** Node.js uygulaması olarak deploy edilir
+- **PostgreSQL Database:** Render PostgreSQL (Free plan mevcut)
+- Detaylı kurulum için: [README-RENDER-SETUP.md](./README-RENDER-SETUP.md) dosyasına bakın
+
+### Frontend: Render Static Site (veya Vercel)
+- **Render Static Site:** Basit ve hızlı deploy
+- **Alternatif Vercel:** Frontend için Vercel de kullanılabilir
+
+### Hızlı Deploy (render.yaml ile)
+Proje kök dizininde `render.yaml` dosyası mevcut. Bu dosya ile tek tıkla deploy:
+
+1. [Render.com](https://render.com) → New + → Blueprint
+2. GitHub repository'nizi bağlayın
+3. Apply butonuna tıklayın
+4. Tüm servisler (Database, Backend, Frontend) otomatik oluşturulur
+
+### Environment Variables
+
+**Backend (Render Web Service):**
+```env
+NODE_ENV=production
+PORT=3000
+DB_HOST=<from-database>
+DB_PORT=5432
+DB_USER=<from-database>
+DB_PASSWORD=<from-database>
+DB_NAME=<from-database>
+JWT_SECRET=<strong-random-secret>
+FRONTEND_URL=<frontend-url>
+```
+
+**Frontend (Static Site):**
+```env
+VITE_API_BASE_URL=<backend-url>
+```
+
+### CI/CD
+- Render otomatik olarak main branch'teki her commit'i deploy eder
+- Preview environments için PR branch'leri kullanabilirsiniz
 
 ## Yol Haritası
 

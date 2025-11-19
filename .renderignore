@@ -1,0 +1,9 @@
+# Render build'den hariç tutulacak dosyalar
+*.md
+.git
+.gitignore
+.env.example
+docker-compose.yml
+Dockerfile
+.dockerignore
+

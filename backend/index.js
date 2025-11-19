@@ -3,11 +3,11 @@ require('dotenv').config();
 
 // 1. Kütüphaneleri çağır
 const express = require('express');
-
-const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
-
 const jwt = require('jsonwebtoken');
+
+// PostgreSQL veritabanı bağlantısı
+const { initializeDatabase, createSchema, getConnection } = require('./config/database');
 
 // Middleware: Gelen isteğin başlıklarında (headers) geçerli bir JWT (token) olup olmadığını kontrol eder.
 function authenticateToken(req, res, next) {
@@ -40,13 +40,13 @@ const PORT = 3000;
 
 // YENİ: Veritabanı bağlantısı artık GÜVENLİ .env dosyasından PARÇA PARÇA okunuyor
 let db = null;
-let useInMemoryDB = true; // Başlangıçta in-memory kullan (MySQL bağlantısı başarılı olursa false olacak)
+let useInMemoryDB = true; // Başlangıçta in-memory kullan (PostgreSQL bağlantısı başarılı olursa false olacak)
 
-// In-memory veritabanı (geçici test için - MySQL bağlanamazsa kullanılacak)
+// In-memory veritabanı (geçici test için - PostgreSQL bağlanamazsa kullanılacak)
 let inMemoryUsers = [];
 let userIdCounter = 1;
 
-// In-memory yetenekler (MySQL bağlanamazsa kullanılacak)
+// In-memory yetenekler (PostgreSQL bağlanamazsa kullanılacak)
 let inMemorySkills = [
     { id: 1, name: 'İngilizce', category: 'Dil' },
     { id: 2, name: 'Fransızca', category: 'Dil' },
@@ -71,30 +71,29 @@ let inMemorySkills = [
 ];
 let skillIdCounter = 21;
 
-// MySQL bağlantısını dene
-try {
-    db = mysql.createConnection({
-        host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'swaps_db'
-    });
-
-    db.connect((err) => {
-        if (err) {
-            console.warn('MySQL baglanamadi, in-memory veritabani kullaniliyor (TEST MODU):', err.code);
-            useInMemoryDB = true;
-            db = null; // db'yi null yap ki in-memory kullanılsın
-        } else {
-            console.log('MySQL Veritabanina (swaps_db) basariyla baglanildi.');
+// PostgreSQL bağlantısını başlat
+async function startDatabase() {
+    try {
+        await initializeDatabase();
+        await createSchema();
+        db = getConnection();
+        
+        if (db) {
+            console.log('PostgreSQL Veritabanina (swaps_db) basariyla baglanildi.');
             useInMemoryDB = false;
+        } else {
+            console.warn('PostgreSQL baglanamadi, in-memory veritabani kullaniliyor (TEST MODU)');
+            useInMemoryDB = true;
         }
-    });
-} catch (error) {
-    console.warn('MySQL baglanamadi, in-memory veritabani kullaniliyor (TEST MODU):', error.message);
-    useInMemoryDB = true;
-    db = null;
+    } catch (error) {
+        console.warn('PostgreSQL baglanamadi, in-memory veritabani kullaniliyor (TEST MODU):', error.message);
+        useInMemoryDB = true;
+        db = null;
+    }
 }
+
+// Veritabanını başlat
+startDatabase();
 
 // 3. CORS ayarı (Frontend'den gelen isteklere izin vermek için)
 app.use((req, res, next) => {
@@ -103,7 +102,7 @@ app.use((req, res, next) => {
         'http://localhost:5173',              // Local development
         'https://swaps.com.tr',               // Production domain
         'https://www.swaps.com.tr',           // Production domain (www)
-        process.env.FRONTEND_URL              // Railway'den gelen environment variable
+        process.env.FRONTEND_URL              // Render'dan gelen environment variable
     ].filter(Boolean); // undefined değerleri temizle
     
     const origin = req.headers.origin;
@@ -150,9 +149,9 @@ app.post('/api/auth/register', async (req, res) => {
 
         }
 
-        // In-memory veritabanı kullanılıyorsa (MySQL bağlanamadıysa)
+        // In-memory veritabanı kullanılıyorsa (PostgreSQL bağlanamadıysa)
         if (useInMemoryDB || !db) {
-            console.log('Using in-memory database (MySQL not available)');
+            console.log('Using in-memory database (PostgreSQL not available)');
             // Email veya kullanıcı adı kontrolü
             const existingUser = inMemoryUsers.find(u => u.email === email || u.kullanici_adi === kullanici_adi);
             if (existingUser) {
@@ -179,30 +178,32 @@ app.post('/api/auth/register', async (req, res) => {
             });
         }
 
-        // MySQL kullanılıyorsa
-        console.log('Using MySQL database');
+        // PostgreSQL kullanılıyorsa
+        console.log('Using PostgreSQL database');
         const hashlenmisSifre = await bcrypt.hash(sifre, 10);
-        const sql = "INSERT INTO Kullanicilar (kullanici_adi, email, sifre) VALUES (?, ?, ?)";
+        const sql = "INSERT INTO Kullanicilar (kullanici_adi, email, sifre) VALUES ($1, $2, $3) RETURNING id";
 
-        db.query(sql, [kullanici_adi, email, hashlenmisSifre], (err, result) => {
-            if (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.status(400).json({ message: 'Bu email veya kullanici adi zaten alinmis.' });
-                }
-                console.error('Veritabanina kayit sirasinda hata:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi olustu: ' + err.message });
-            }
-            console.log('User created successfully in MySQL');
+        try {
+            const result = await db.query(sql, [kullanici_adi, email, hashlenmisSifre]);
+            const userId = result.rows[0].id;
+            
+            console.log('User created successfully in PostgreSQL');
             res.status(201).json({ 
                 message: 'Kullanici basariyla olusturuldu!',
                 user: {
-                    id: result.insertId,
+                    id: userId,
                     username: kullanici_adi,
                     email: email
                 },
-                token: 'temp-token-' + result.insertId // Kayıt sonrası otomatik giriş için token
+                token: 'temp-token-' + userId // Kayıt sonrası otomatik giriş için token
             });
-        });
+        } catch (dbError) {
+            if (dbError.code === '23505') { // PostgreSQL unique constraint violation
+                return res.status(400).json({ message: 'Bu email veya kullanici adi zaten alinmis.' });
+            }
+            console.error('Veritabanina kayit sirasinda hata:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi olustu: ' + dbError.message });
+        }
 
     } catch (error) {
         console.error('Register endpoint hatasi:', error);
@@ -234,9 +235,9 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
 
-        // In-memory veritabanı kullanılıyorsa (MySQL bağlanamadıysa)
+        // In-memory veritabanı kullanılıyorsa (PostgreSQL bağlanamadıysa)
         if (useInMemoryDB || !db) {
-            console.log('Using in-memory database for login (MySQL not available)');
+            console.log('Using in-memory database for login (PostgreSQL not available)');
             const kullanici = inMemoryUsers.find(u => u.email === email);
             
             if (!kullanici) {
@@ -261,20 +262,17 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
 
-        // MySQL kullanılıyorsa
-        const sql = "SELECT * FROM Kullanicilar WHERE email = ?";
+        // PostgreSQL kullanılıyorsa
+        const sql = "SELECT * FROM Kullanicilar WHERE email = $1";
         
-        db.query(sql, [email], async (err, results) => {
-            if (err) {
-                console.error('Veritabani sorgusu sirasinda hata:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi olustu.' });
-            }
+        try {
+            const results = await db.query(sql, [email]);
 
-            if (results.length === 0) {
+            if (results.rows.length === 0) {
                 return res.status(401).json({ message: 'Email veya sifre hatali.' });
             }
 
-            const kullanici = results[0];
+            const kullanici = results.rows[0];
             const sifreEslesiyor = await bcrypt.compare(sifre, kullanici.sifre);
 
             if (!sifreEslesiyor) {
@@ -292,7 +290,10 @@ app.post('/api/auth/login', async (req, res) => {
                 },
                 token: 'temp-token-' + kullanici.id // Geçici token, ileride JWT ile değiştirilebilir
             });
-        });
+        } catch (dbError) {
+            console.error('Veritabani sorgusu sirasinda hata:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi olustu.' });
+        }
 
     } catch (error) {
         console.error('Giris sirasinda hata:', error);
@@ -328,19 +329,17 @@ app.get('/api/profile/:userId', async (req, res) => {
             });
         }
 
-        // MySQL kullanılıyorsa
-        const sql = "SELECT id, kullanici_adi, email FROM Kullanicilar WHERE id = ?";
-        db.query(sql, [userId], (err, results) => {
-            if (err) {
-                console.error('Kullanici bulunamadi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
+        // PostgreSQL kullanılıyorsa
+        const sql = "SELECT id, kullanici_adi, email FROM Kullanicilar WHERE id = $1";
+        
+        try {
+            const results = await db.query(sql, [userId]);
             
-            if (results.length === 0) {
+            if (results.rows.length === 0) {
                 return res.status(404).json({ message: 'Kullanici bulunamadi.' });
             }
 
-            const user = results[0];
+            const user = results.rows[0];
             
             // Profil verilerini getir (şimdilik null, ileride Profiles tablosundan çekilebilir)
             res.status(200).json({
@@ -352,7 +351,10 @@ app.get('/api/profile/:userId', async (req, res) => {
                 },
                 profile: null, // İleride Profiles tablosundan çekilecek
             });
-        });
+        } catch (dbError) {
+            console.error('Kullanici bulunamadi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
 
     } catch (error) {
         console.error('Profil getirme sirasinda hata:', error);
@@ -377,7 +379,7 @@ app.post('/api/profile/save-settings', async (req, res) => {
 
         // In-memory veritabanı kullanılıyorsa
         if (useInMemoryDB || !db) {
-            console.log('Using in-memory database for profile save (MySQL not available)');
+            console.log('Using in-memory database for profile save (PostgreSQL not available)');
 
             // Kullanıcıyı bul
             const userIndex = inMemoryUsers.findIndex(u => u.id == userId);
@@ -395,10 +397,10 @@ app.post('/api/profile/save-settings', async (req, res) => {
             });
         }
 
-        // MySQL kullanılıyorsa
+        // PostgreSQL kullanılıyorsa
         // Not: Şu an için profil verileri localStorage'da tutuluyor
-        // İleride MySQL'de ayrı bir Profiles tablosu oluşturulabilir
-        console.log('MySQL profil kaydetme özelliği henüz implement edilmedi');
+        // İleride PostgreSQL'de ayrı bir Profiles tablosu oluşturulabilir
+        console.log('PostgreSQL profil kaydetme özelliği henüz implement edilmedi');
 
         return res.status(200).json({
             message: 'Profil ayarlari basariyla kaydedildi!',
@@ -425,15 +427,16 @@ app.get('/api/admin/users', async (req, res) => {
             return res.status(200).json({ success: true, users });
         }
 
-        // MySQL kullanılıyorsa
+        // PostgreSQL kullanılıyorsa
         const sql = "SELECT id, kullanici_adi as username, email FROM Kullanicilar";
-        db.query(sql, (err, results) => {
-            if (err) {
-                console.error('Kullanicilar listelenemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
-            res.status(200).json({ success: true, users: results });
-        });
+        
+        try {
+            const results = await db.query(sql);
+            res.status(200).json({ success: true, users: results.rows });
+        } catch (dbError) {
+            console.error('Kullanicilar listelenemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Admin kullanici listesi hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });
@@ -455,18 +458,19 @@ app.delete('/api/admin/users/:userId', async (req, res) => {
             return res.status(200).json({ success: true, message: 'Kullanici silindi.' });
         }
 
-        // MySQL kullanılıyorsa
-        const sql = "DELETE FROM Kullanicilar WHERE id = ?";
-        db.query(sql, [userId], (err, result) => {
-            if (err) {
-                console.error('Kullanici silinemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
-            if (result.affectedRows === 0) {
+        // PostgreSQL kullanılıyorsa
+        const sql = "DELETE FROM Kullanicilar WHERE id = $1";
+        
+        try {
+            const result = await db.query(sql, [userId]);
+            if (result.rowCount === 0) {
                 return res.status(404).json({ message: 'Kullanici bulunamadi.' });
             }
             res.status(200).json({ success: true, message: 'Kullanici silindi.' });
-        });
+        } catch (dbError) {
+            console.error('Kullanici silinemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Kullanici silme hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });
@@ -491,18 +495,19 @@ app.put('/api/admin/users/:userId', async (req, res) => {
             return res.status(200).json({ success: true, message: 'Kullanici guncellendi.' });
         }
 
-        // MySQL kullanılıyorsa
-        const sql = "UPDATE Kullanicilar SET kullanici_adi = ?, email = ? WHERE id = ?";
-        db.query(sql, [username, email, userId], (err, result) => {
-            if (err) {
-                console.error('Kullanici guncellenemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
-            if (result.affectedRows === 0) {
+        // PostgreSQL kullanılıyorsa
+        const sql = "UPDATE Kullanicilar SET kullanici_adi = $1, email = $2 WHERE id = $3";
+        
+        try {
+            const result = await db.query(sql, [username, email, userId]);
+            if (result.rowCount === 0) {
                 return res.status(404).json({ message: 'Kullanici bulunamadi.' });
             }
             res.status(200).json({ success: true, message: 'Kullanici guncellendi.' });
-        });
+        } catch (dbError) {
+            console.error('Kullanici guncellenemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Kullanici guncelleme hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });
@@ -517,15 +522,16 @@ app.get('/api/skills', async (req, res) => {
             return res.status(200).json({ success: true, skills: inMemorySkills });
         }
 
-        // MySQL kullanılıyorsa
+        // PostgreSQL kullanılıyorsa
         const sql = "SELECT * FROM Yetenekler ORDER BY category, name";
-        db.query(sql, (err, results) => {
-            if (err) {
-                console.error('Yetenekler listelenemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
-            res.status(200).json({ success: true, skills: results });
-        });
+        
+        try {
+            const results = await db.query(sql);
+            res.status(200).json({ success: true, skills: results.rows });
+        } catch (dbError) {
+            console.error('Yetenekler listelenemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Yetenek listesi hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });
@@ -561,22 +567,23 @@ app.post('/api/skills', async (req, res) => {
             return res.status(201).json({ success: true, skill: newSkill, message: 'Yetenek eklendi! (TEST MODU - In-Memory)' });
         }
 
-        // MySQL kullanılıyorsa
-        const sql = "INSERT INTO Yetenekler (name, category) VALUES (?, ?)";
-        db.query(sql, [name.trim(), category.trim()], (err, result) => {
-            if (err) {
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.status(400).json({ message: 'Bu yetenek zaten mevcut!' });
-                }
-                console.error('Yetenek eklenemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
+        // PostgreSQL kullanılıyorsa
+        const sql = "INSERT INTO Yetenekler (name, category) VALUES ($1, $2) RETURNING *";
+        
+        try {
+            const result = await db.query(sql, [name.trim(), category.trim()]);
             res.status(201).json({
                 success: true,
-                skill: { id: result.insertId, name: name.trim(), category: category.trim() },
+                skill: result.rows[0],
                 message: 'Yetenek eklendi!',
             });
-        });
+        } catch (dbError) {
+            if (dbError.code === '23505') { // PostgreSQL unique constraint violation
+                return res.status(400).json({ message: 'Bu yetenek zaten mevcut!' });
+            }
+            console.error('Yetenek eklenemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Yetenek ekleme hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });
@@ -598,18 +605,19 @@ app.delete('/api/skills/:skillId', async (req, res) => {
             return res.status(200).json({ success: true, message: 'Yetenek silindi.' });
         }
 
-        // MySQL kullanılıyorsa
-        const sql = "DELETE FROM Yetenekler WHERE id = ?";
-        db.query(sql, [skillId], (err, result) => {
-            if (err) {
-                console.error('Yetenek silinemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
-            if (result.affectedRows === 0) {
+        // PostgreSQL kullanılıyorsa
+        const sql = "DELETE FROM Yetenekler WHERE id = $1";
+        
+        try {
+            const result = await db.query(sql, [skillId]);
+            if (result.rowCount === 0) {
                 return res.status(404).json({ message: 'Yetenek bulunamadi.' });
             }
             res.status(200).json({ success: true, message: 'Yetenek silindi.' });
-        });
+        } catch (dbError) {
+            console.error('Yetenek silinemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Yetenek silme hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });
@@ -637,18 +645,19 @@ app.put('/api/skills/:skillId', async (req, res) => {
             return res.status(200).json({ success: true, message: 'Yetenek guncellendi.' });
         }
 
-        // MySQL kullanılıyorsa
-        const sql = "UPDATE Yetenekler SET name = ?, category = ? WHERE id = ?";
-        db.query(sql, [name.trim(), category.trim(), skillId], (err, result) => {
-            if (err) {
-                console.error('Yetenek guncellenemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
-            if (result.affectedRows === 0) {
+        // PostgreSQL kullanılıyorsa
+        const sql = "UPDATE Yetenekler SET name = $1, category = $2 WHERE id = $3";
+        
+        try {
+            const result = await db.query(sql, [name.trim(), category.trim(), skillId]);
+            if (result.rowCount === 0) {
                 return res.status(404).json({ message: 'Yetenek bulunamadi.' });
             }
             res.status(200).json({ success: true, message: 'Yetenek guncellendi.' });
-        });
+        } catch (dbError) {
+            console.error('Yetenek guncellenemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Yetenek guncelleme hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });
@@ -682,14 +691,12 @@ app.delete('/api/profile/delete-account/:userId', async (req, res) => {
             });
         }
 
-        // MySQL kullanılıyorsa
-        const sql = "DELETE FROM Kullanicilar WHERE id = ?";
-        db.query(sql, [userId], (err, result) => {
-            if (err) {
-                console.error('Hesap silinemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
-            if (result.affectedRows === 0) {
+        // PostgreSQL kullanılıyorsa
+        const sql = "DELETE FROM Kullanicilar WHERE id = $1";
+        
+        try {
+            const result = await db.query(sql, [userId]);
+            if (result.rowCount === 0) {
                 return res.status(404).json({ message: 'Kullanici bulunamadi.' });
             }
             
@@ -698,7 +705,10 @@ app.delete('/api/profile/delete-account/:userId', async (req, res) => {
                 success: true, 
                 message: 'Hesabiniz basariyla silindi.' 
             });
-        });
+        } catch (dbError) {
+            console.error('Hesap silinemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Hesap silme hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });
@@ -714,16 +724,17 @@ app.get('/api/categories', async (req, res) => {
             return res.status(200).json({ success: true, categories });
         }
 
-        // MySQL kullanılıyorsa
+        // PostgreSQL kullanılıyorsa
         const sql = "SELECT DISTINCT category FROM Yetenekler ORDER BY category";
-        db.query(sql, (err, results) => {
-            if (err) {
-                console.error('Kategoriler listelenemedi:', err);
-                return res.status(500).json({ message: 'Sunucu hatasi.' });
-            }
-            const categories = results.map(row => row.category);
+        
+        try {
+            const results = await db.query(sql);
+            const categories = results.rows.map(row => row.category);
             res.status(200).json({ success: true, categories });
-        });
+        } catch (dbError) {
+            console.error('Kategoriler listelenemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi.' });
+        }
     } catch (error) {
         console.error('Kategori listesi hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi.' });

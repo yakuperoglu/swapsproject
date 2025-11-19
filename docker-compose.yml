@@ -11,9 +11,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Railway MySQL bilgilerini .env dosyasından alacak
+      # PostgreSQL bilgilerini .env dosyasından alacak
       - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT:-3306}
+      - DB_PORT=${DB_PORT:-5432}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}

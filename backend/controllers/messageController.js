@@ -1,4 +1,9 @@
-const db = require('../db'); // Veritabanı bağlantımız
+const { getConnection } = require('../config/database'); // PostgreSQL bağlantımız
+
+// Database connection'ı al
+function getDb() {
+    return getConnection();
+}
 
 /**
  * YENİ MESAJ GÖNDERME (CREATE)
@@ -18,6 +23,11 @@ exports.sendMessage = async (req, res) => {
 
         if (sender_id == receiver_id) {
              return res.status(400).json({ message: 'Kullanıcı kendi kendine mesaj gönderemez.' });
+        }
+
+        const db = getDb();
+        if (!db) {
+            return res.status(500).json({ message: 'Veritabanı bağlantısı mevcut değil.' });
         }
 
         const query = `
@@ -47,6 +57,11 @@ exports.getConversation = async (req, res) => {
 
         // 2. Konuşulmak istenen diğer kullanıcı (URL'den)
         const otherUserId = req.params.otherUserId;
+
+        const db = getDb();
+        if (!db) {
+            return res.status(500).json({ message: 'Veritabanı bağlantısı mevcut değil.' });
+        }
 
         const query = `
             SELECT * FROM Messages
