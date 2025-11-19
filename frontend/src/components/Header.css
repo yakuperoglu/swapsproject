@@ -33,7 +33,7 @@
 .logo span {
   font-size: 1.8rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -53,7 +53,7 @@ nav a, nav a:visited, nav a:hover, nav a:active,
 nav .active,
 nav [class*="active"] {
   text-decoration: none;
-  color: #333;
+  color: var(--text-color);
   font-weight: 500;
   transition: color 0.3s ease;
   position: relative;
@@ -66,12 +66,12 @@ nav a::after {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   transition: width 0.3s ease;
 }
 
 nav a:hover {
-  color: #667eea;
+  color: var(--primary-accent);
 }
 
 nav a:hover::after {
@@ -98,26 +98,26 @@ nav a:hover::after {
 
 .auth-buttons .login-btn {
   background-color: transparent;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: var(--primary-accent);
+  border: 2px solid var(--primary-accent);
 }
 
 .auth-buttons .login-btn:hover {
-  background-color: #667eea;
+  background-color: var(--primary-accent);
   color: #fff;
   transform: translateY(-2px);
 }
 
 .auth-buttons .signup-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: #fff;
   border: 2px solid transparent;
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.2);
 }
 
 .auth-buttons .signup-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
 }
 
 @media (max-width: 768px) {

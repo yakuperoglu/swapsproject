@@ -33,7 +33,7 @@
   transform: translateX(-50%);
   width: 80px;
   height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   border-radius: 2px;
 }
 
@@ -66,7 +66,7 @@
 .form-group textarea {
   width: 100%;
   padding: 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border-color);
   border-radius: 10px;
   font-size: 1rem;
   transition: all 0.3s ease;
@@ -76,8 +76,8 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .form-group textarea {
@@ -88,7 +88,7 @@
 .submit-btn {
   padding: 1rem 3rem;
   border: none;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: white;
   border-radius: 50px;
   cursor: pointer;
@@ -96,13 +96,13 @@
   font-weight: 600;
   align-self: center;
   transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.2);
   margin-top: 1rem;
 }
 
 .submit-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
 }
 
 .submit-btn:active {

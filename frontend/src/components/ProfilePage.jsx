@@ -630,7 +630,9 @@ const ProfilePage = () => {
       <div className="profile-layout">
         <div className="sidebar">
           <div className="sidebar-header">
-            <h2>Menü</h2>
+            <h2 className="sidebar-logo">
+              <span>SW</span>APS
+            </h2>
           </div>
           <nav className="sidebar-nav">
             {menuItems.map((item) => (
@@ -709,9 +711,9 @@ const ProfilePage = () => {
                     startIcon={<Edit />}
                     onClick={handleEditClick}
                     sx={{
-                      background: 'linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%)',
+                      background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                       '&:hover': {
-                        background: 'linear-gradient(135deg, #ff6b35 0%, #ff5722 100%)',
+                        background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                       },
                       textTransform: 'uppercase',
                       fontWeight: 700,
@@ -735,13 +737,13 @@ const ProfilePage = () => {
                     {allSkills.length > 0 ? (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {allSkills.map((skill, index) => (
-                          <Chip
+                  <Chip
                             key={index}
                             label={skill}
                             size="small"
                             sx={{
-                              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-                              color: 'white',
+                      background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
+                      color: '#0f172a',
                               fontWeight: 500,
                             }}
                           />
@@ -766,7 +768,7 @@ const ProfilePage = () => {
                             label={skill}
                             size="small"
                             sx={{
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                              background: 'var(--secondary-gradient)',
                               color: 'white',
                               fontWeight: 500,
                             }}
@@ -920,9 +922,9 @@ const ProfilePage = () => {
                   variant="contained"
                   onClick={handlePasswordSubmit}
                   sx={{
-                    background: 'linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%)',
+                  background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #ff6b35 0%, #ff5722 100%)',
+                    background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                     },
                   }}
                 >
@@ -933,11 +935,11 @@ const ProfilePage = () => {
                   variant="outlined"
                   onClick={() => setShowPasswordModal(false)}
                   sx={{
-                    borderColor: '#ff8c42',
-                    color: '#ff8c42',
+                borderColor: '#84cc16',
+                color: '#84cc16',
                     '&:hover': {
-                      borderColor: '#ff6b35',
-                      background: 'rgba(255, 140, 66, 0.1)',
+                  borderColor: '#22c55e',
+                  background: 'rgba(132, 204, 22, 0.12)',
                     },
                   }}
                 >
@@ -984,11 +986,11 @@ const ProfilePage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: 1,
-              color: '#f57c00',
+              color: '#ef4444',
               fontWeight: 700,
             }}
           >
-            <Warning sx={{ fontSize: 28, color: '#f57c00' }} />
+            <Warning sx={{ fontSize: 28, color: '#ef4444' }} />
             {confirmDialog.title}
           </DialogTitle>
           <DialogContent>
@@ -1001,11 +1003,11 @@ const ProfilePage = () => {
               onClick={handleCloseConfirmDialog}
               variant="outlined"
               sx={{
-                borderColor: '#ccc',
-                color: '#666',
+                borderColor: '#84cc16',
+                color: '#84cc16',
                 '&:hover': {
-                  borderColor: '#999',
-                  background: 'rgba(0, 0, 0, 0.05)',
+                  borderColor: '#22c55e',
+                  background: 'rgba(132, 204, 22, 0.12)',
                 },
               }}
             >
@@ -1016,9 +1018,9 @@ const ProfilePage = () => {
               variant="contained"
               autoFocus
               sx={{
-                background: 'linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%)',
+                background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #ff6b35 0%, #ff5722 100%)',
+                  background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                 },
               }}
             >
@@ -1035,7 +1037,9 @@ const ProfilePage = () => {
     <div className="profile-layout">
       <div className="sidebar">
         <div className="sidebar-header">
-          <h2>Menü</h2>
+          <h2 className="sidebar-logo">
+            <span>SW</span>APS
+          </h2>
         </div>
         <nav className="sidebar-nav">
           {menuItems.map((item) => (
@@ -1074,9 +1078,9 @@ const ProfilePage = () => {
                 variant="contained"
                 onClick={handleCancel}
                 sx={{
-                  background: 'linear-gradient(135deg, #ff9500 0%, #ff7f00 100%)',
+                  background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #ff7f00 0%, #ff6b00 100%)',
+                    background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                   },
                 }}
               >
@@ -1192,7 +1196,7 @@ const ProfilePage = () => {
                 </Typography>
                 {Object.entries(skillCategories).map(([categoryKey, category]) => (
                   <Box key={categoryKey} sx={{ mb: 4 }}>
-                    <Typography variant="h6" sx={{ mb: 2, color: '#ff8c42', fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{ mb: 2, color: '#84cc16', fontWeight: 600 }}>
                       {category.label}
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -1208,15 +1212,15 @@ const ProfilePage = () => {
                             sx={{
                               cursor: 'pointer',
                               background: isSelected 
-                                ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)' 
+                                ? 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)' 
                                 : 'transparent',
-                              color: isSelected ? 'white' : '#ff9800',
-                              borderColor: '#ff9800',
+                              color: isSelected ? '#0f172a' : '#84cc16',
+                              borderColor: '#84cc16',
                               fontWeight: isSelected ? 600 : 400,
                               '&:hover': {
                                 background: isSelected 
-                                  ? 'rgba(255, 152, 0, 0.8)' 
-                                  : 'rgba(255, 152, 0, 0.1)',
+                                  ? 'rgba(163, 230, 53, 0.85)' 
+                                  : 'rgba(132, 204, 22, 0.12)',
                               },
                             }}
                           />
@@ -1234,7 +1238,7 @@ const ProfilePage = () => {
                 </Typography>
                 {Object.entries(skillCategories).map(([categoryKey, category]) => (
                   <Box key={categoryKey} sx={{ mb: 4 }}>
-                    <Typography variant="h6" sx={{ mb: 2, color: '#667eea', fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{ mb: 2, color: 'var(--primary-accent)', fontWeight: 600 }}>
                       {category.label}
                     </Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -1250,15 +1254,15 @@ const ProfilePage = () => {
                             sx={{
                               cursor: 'pointer',
                               background: isSelected 
-                                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                                ? 'var(--secondary-gradient)' 
                                 : 'transparent',
-                              color: isSelected ? 'white' : '#667eea',
-                              borderColor: '#667eea',
+                              color: isSelected ? '#fff' : 'var(--primary-accent)',
+                              borderColor: 'var(--primary-accent)',
                               fontWeight: isSelected ? 600 : 400,
                               '&:hover': {
                                 background: isSelected 
-                                  ? 'rgba(102, 126, 234, 0.8)' 
-                                  : 'rgba(102, 126, 234, 0.1)',
+                                  ? 'rgba(14, 165, 233, 0.85)' 
+                                  : 'rgba(37, 99, 235, 0.1)',
                               },
                             }}
                           />
@@ -1305,11 +1309,11 @@ const ProfilePage = () => {
                   onClick={handleAddSocialMedia}
                   variant="outlined"
                   sx={{ 
-                    borderColor: '#ff8c42', 
-                    color: '#ff8c42',
+                  borderColor: '#84cc16', 
+                  color: '#84cc16',
                     '&:hover': {
-                      borderColor: '#ff6b35',
-                      background: 'rgba(255, 140, 66, 0.1)',
+                    borderColor: '#22c55e',
+                    background: 'rgba(132, 204, 22, 0.1)',
                     },
                   }}
                 >
@@ -1401,7 +1405,7 @@ const ProfilePage = () => {
 
               {/* Hesap Güvenliği */}
               <section ref={sectionRefs['hesap-guvenligi']} className="edit-section">
-                <Typography variant="h5" sx={{ mb: 3, fontWeight: 600, color: '#f57c00' }}>
+                <Typography variant="h5" sx={{ mb: 3, fontWeight: 600, color: '#ef4444' }}>
                   Hesap Güvenliği
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -1428,9 +1432,9 @@ const ProfilePage = () => {
                         variant="contained"
                         onClick={() => setShowPasswordModal(true)}
                         sx={{
-                          background: 'linear-gradient(135deg, #ffa726 0%, #ff9800 100%)',
+                          background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                           '&:hover': { 
-                            background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                            background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                           },
                         }}
                       >
@@ -1467,9 +1471,9 @@ const ProfilePage = () => {
                         variant="contained"
                         onClick={() => setShowPasswordModal(true)}
                         sx={{
-                          background: 'linear-gradient(135deg, #ffa726 0%, #ff9800 100%)',
+                          background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                           '&:hover': { 
-                            background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                            background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                           },
                         }}
                       >
@@ -1500,9 +1504,9 @@ const ProfilePage = () => {
                         variant="contained"
                         onClick={() => setShowPasswordModal(true)}
                         sx={{
-                          background: 'linear-gradient(135deg, #ffa726 0%, #ff9800 100%)',
+                          background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                           '&:hover': { 
-                            background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                            background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                           },
                         }}
                       >
@@ -1548,9 +1552,9 @@ const ProfilePage = () => {
                   disabled={isSaving}
                   size="large"
                   sx={{
-                    background: 'linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%)',
+                    background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #ff6b35 0%, #ff5722 100%)',
+                      background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                     },
                     '&:disabled': {
                       background: 'linear-gradient(135deg, #ccc 0%, #aaa 100%)',
@@ -1565,11 +1569,11 @@ const ProfilePage = () => {
                   onClick={handleCancel}
                   size="large"
                   sx={{
-                    borderColor: '#ff8c42',
-                    color: '#ff8c42',
+                    borderColor: '#84cc16',
+                    color: '#84cc16',
                     '&:hover': {
-                      borderColor: '#ff6b35',
-                      background: 'rgba(255, 140, 66, 0.1)',
+                      borderColor: '#22c55e',
+                      background: 'rgba(132, 204, 22, 0.12)',
                     },
                   }}
                 >
@@ -1636,9 +1640,9 @@ const ProfilePage = () => {
                   variant="contained"
                   onClick={handlePasswordSubmit}
                   sx={{
-                    background: 'linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%)',
+                    background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #ff6b35 0%, #ff5722 100%)',
+                      background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                     },
                   }}
                 >
@@ -1653,11 +1657,11 @@ const ProfilePage = () => {
                     setPasswordError('');
                   }}
                   sx={{
-                    borderColor: '#ff8c42',
-                    color: '#ff8c42',
+                    borderColor: '#84cc16',
+                    color: '#84cc16',
                     '&:hover': {
-                      borderColor: '#ff6b35',
-                      background: 'rgba(255, 140, 66, 0.1)',
+                      borderColor: '#22c55e',
+                      background: 'rgba(132, 204, 22, 0.12)',
                     },
                   }}
                 >
@@ -1704,11 +1708,11 @@ const ProfilePage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: 1,
-              color: '#f57c00',
+              color: '#84cc16',
               fontWeight: 700,
             }}
           >
-            <Warning sx={{ fontSize: 28, color: '#f57c00' }} />
+            <Warning sx={{ fontSize: 28, color: '#84cc16' }} />
             {confirmDialog.title}
           </DialogTitle>
           <DialogContent>
@@ -1736,9 +1740,9 @@ const ProfilePage = () => {
               variant="contained"
               autoFocus
               sx={{
-                background: 'linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%)',
+                background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #ff6b35 0%, #ff5722 100%)',
+                  background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
                 },
               }}
             >

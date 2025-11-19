@@ -21,7 +21,9 @@ const DiscoverPage = () => {
     <div className="profile-layout">
       <div className="sidebar">
         <div className="sidebar-header">
-          <h2>Menü</h2>
+          <h2 className="sidebar-logo">
+            <span>SW</span>APS
+          </h2>
         </div>
         <nav className="sidebar-nav">
           {menuItems.map((item) => (

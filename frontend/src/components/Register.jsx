@@ -172,7 +172,7 @@ const Register = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'var(--primary-gradient)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -311,7 +311,7 @@ const Register = () => {
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2">
                 Zaten hesabınız var mı?{' '}
-                <Link to="/login" style={{ textDecoration: 'none', color: 'primary.main' }}>
+                <Link to="/login" style={{ textDecoration: 'none', color: 'var(--primary-accent)' }}>
                   Giriş Yap
                 </Link>
               </Typography>

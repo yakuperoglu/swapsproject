@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   height: 80vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -44,7 +44,7 @@
 }
 
 .cta-btn {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: var(--secondary-gradient);
   color: #fff;
   border: none;
   padding: 1.2rem 3rem;
@@ -54,14 +54,14 @@
   font-weight: 600;
   text-decoration: none;
   display: inline-block;
-  box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+  box-shadow: 0 15px 35px rgba(14, 165, 233, 0.35);
   transition: all 0.3s ease;
   animation: fadeInUp 1s ease-out 0.6s both;
 }
 
 .cta-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 15px 40px rgba(245, 87, 108, 0.6);
+  box-shadow: 0 20px 45px rgba(14, 165, 233, 0.4);
 }
 
 @keyframes fadeInUp {

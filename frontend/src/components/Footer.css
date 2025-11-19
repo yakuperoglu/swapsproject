@@ -1,7 +1,7 @@
 .footer {
   text-align: center;
   padding: 3rem 2rem;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
   color: #fff;
   box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
 }
@@ -18,7 +18,7 @@
   display: block;
   width: 60px;
   height: 4px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: var(--secondary-gradient);
   margin: 0 auto 1.5rem;
   border-radius: 2px;
 }

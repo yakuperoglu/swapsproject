@@ -9,82 +9,82 @@ const initialSuggestionTopics = [
     label: 'Yabancı Dil',
     suggestions: [
       {
-        title: 'Almanca',
-        detail: 'Günlük 10 kelime ezberle ve cümle içinde kullan.',
-        username: 'DeutschMika',
+        title: '📘 Almanca',
+        detail: 'Her gün 5 kelime + 1 cümle kur, ritim hemen oturur.',
+        username: 'DeutschDrifter',
       },
       {
-        title: 'İtalyanca',
-        detail: 'Duolingo + YouTube “Italian with Lucrezia” günlük 1 video.',
-        username: 'ParisLeo',
+        title: '🎧 İngilizce',
+        detail: 'Kısa videoları altyazıyla izle, yüksek sesle tekrar et, telaffuz çok hızlı gelişir.',
+        username: 'LexiLooper',
       },
       {
-        title: 'Fransızca',
-        detail: 'Her gün 5 dakika dizi/şarkı dinle, aynı cümleyi tekrar et.',
-        username: 'RomaNico',
+        title: '🎤 Fransızca',
+        detail: 'Günde 5 dakika sesli okuma yap, dilin melodisini çok hızlı kaparsın.',
+        username: 'ParisPhraser',
+      },
+    ],
+  },
+  {
+    id: 'music',
+    label: 'Müzik',
+    suggestions: [
+      {
+        title: '🥁 Davul',
+        detail: 'Her gün 10 dakika temel ritimleri (8’lik – 16’lık) tekrar et, koordinasyon çok hızlı oturur.',
+        username: 'DrumPulseX',
+      },
+      {
+        title: '🎸 Gitar',
+        detail: 'Akor geçişlerini yavaş çalış, parmaklar alıştıkça hız kendiliğinden gelir.',
+        username: 'ChordRider',
+      },
+      {
+        title: '🎻 Keman',
+        detail: 'Yay kontrolüne odaklan, temiz ton doğru yay açısı + sabit hareketten gelir.',
+        username: 'BowFlow',
       },
     ],
   },
   {
     id: 'coding',
-    label: 'Yazılım & Kodlama',
+    label: 'Programlama',
     suggestions: [
       {
-        title: 'C',
-        detail: 'Her gün 1 küçük fonksiyon yaz ve terminalde derle.',
-        username: 'PointerEJ',
+        title: '💻 C',
+        detail: 'Her gün 1 tane pointer içeren küçük fonksiyon yaz, bellek mantığı çok daha hızlı oturur.',
+        username: 'SegFaultSeeker',
       },
       {
-        title: 'R',
-        detail: 'Hazır veri seti aç, tek bir grafik çiz (plot, hist vb.).',
-        username: 'Rstats',
+        title: '🌐 JavaScript',
+        detail: 'Günde 1 küçük etkileşim ekle (butona tıkla → yazı değişsin), DOM + JS bağlantısı kafanda netleşir.',
+        username: 'AsyncNinja',
       },
       {
-        title: 'JavaScript',
-        detail: 'Her gün tek bir etkileşim: butona tıklayınca yazı değişsin.',
-        username: 'JSby',
+        title: '⚛️ React',
+        detail: 'Önce sadece state ve props ile 2–3 bileşenli mini bir uygulama yaz, mantığı anlayınca hook’lara geç.',
+        username: 'HookHunter',
       },
     ],
   },
   {
     id: 'design',
-    label: 'Tasarım & Medya',
+    label: 'Tasarım',
     suggestions: [
       {
-        title: 'Photoshop',
-        detail: '1 küçük kompozisyon yap: foto + yazı + renk düzeni.',
-        username: 'PSVisionEJ',
+        title: '🎨 Figma',
+        detail: 'Her gün 1 küçük UI bileşeni tasarla, auto-layout mantığı çok hızlı oturur.',
+        username: 'FrameWizard',
       },
       {
-        title: 'InDesign',
-        detail: 'Günde 1 sayfa düzenle: başlık, iki sütun metin, görsel.',
-        username: 'InDesign',
+        title: '🖼️ Photoshop',
+        detail: 'Basit düzenlemelerle başla (renk düzeltme, kesme, maskeleme), katman mantığı oturduktan sonra her şey kolaylaşır.',
+        username: 'PixelCrafter',
       },
       {
-        title: 'Figma',
-        detail: 'Her gün 1 bileşen tasarla: buton, kart veya login ekranı.',
-        username: 'FigmaFlowEJ',
-      },
-    ],
-  },
-  {
-    id: 'other',
-    label: 'Diğer Yetenekler',
-    suggestions: [
-      {
-        title: 'Yazma',
-        detail: 'Kısa metinler üret, 3–4 cümlelik mini hikâyeler dene.',
-        username: 'WordSmith',
-      },
-      {
-        title: 'Fizik',
-        detail: 'Bir formül seç, nereden geldiğini kendine açıklamaya çalış.',
-        username: 'PhysKic',
-      },
-      {
-        title: 'Felsefe',
-        detail: 'Tek bir soruya odaklan: “Neden?” ve 1 paragraf yaz.',
-        username: 'Socratic',
+        title: '📱 UI/UX',
+        detail: 'Günde 1 uygulamayı incele, “Neden böyle tasarlamışlar?” sorusunu sorarak alışkanlık kazan.',
+        username: 'FlowSensei',
       },
     ],
   },
@@ -92,7 +92,7 @@ const initialSuggestionTopics = [
 
 const skillCategoryOptions = {
   languages: {
-    label: 'Dil',
+    label: 'Yabancı Dil',
     options: [
       'İngilizce',
       'Fransızca',
@@ -116,8 +116,22 @@ const skillCategoryOptions = {
       'Macarca',
     ],
   },
+  music: {
+    label: 'Müzik',
+    options: [
+      'Davul',
+      'Gitar',
+      'Keman',
+      'Piyano',
+      'Bateri',
+      'Şan',
+      'Bas Gitar',
+      'Saksafon',
+      'Viyola',
+    ],
+  },
   coding: {
-    label: 'Yazılım & Kodlama',
+    label: 'Programlama',
     options: [
       'C',
       'C++',
@@ -162,7 +176,7 @@ const skillCategoryOptions = {
     ],
   },
   design: {
-    label: 'Tasarım & Medya',
+    label: 'Tasarım',
     options: [
       'Photoshop',
       'Illustrator',
@@ -184,31 +198,6 @@ const skillCategoryOptions = {
       'InVision',
       'Zeplin',
       'Procreate',
-    ],
-  },
-  other: {
-    label: 'Diğer Yetenekler',
-    options: [
-      'Müzik',
-      'Spor',
-      'Sanat',
-      'Edebiyat',
-      'Matematik',
-      'Fizik',
-      'Kimya',
-      'Biyoloji',
-      'Tarih',
-      'Felsefe',
-      'Psikoloji',
-      'İşletme',
-      'Pazarlama',
-      'Finans',
-      'Muhasebe',
-      'Proje Yönetimi',
-      'Liderlik',
-      'İletişim',
-      'Sunum',
-      'Yazma',
     ],
   },
 };
@@ -295,7 +284,9 @@ const SuggestionsPage = () => {
     <div className="profile-layout">
       <div className="sidebar">
         <div className="sidebar-header">
-          <h2>Menü</h2>
+          <h2 className="sidebar-logo">
+            <span>SW</span>APS
+          </h2>
         </div>
         <nav className="sidebar-nav">
           {menuItems.map((item) => (
@@ -417,7 +408,6 @@ const SuggestionsPage = () => {
                     </div>
                     <p className="suggestion-detail">{item.detail}</p>
                     <div className="suggestion-user">
-                      <span>Örnek kullanıcı:</span>
                       <strong>{item.username}</strong>
                     </div>
                   </div>

@@ -263,7 +263,7 @@ const AdminPanel = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'var(--primary-gradient)',
         py: 4,
       }}
     >
@@ -302,7 +302,7 @@ const AdminPanel = () => {
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <PersonIcon sx={{ fontSize: 50, color: '#667eea' }} />
+                  <PersonIcon sx={{ fontSize: 50, color: 'var(--primary-accent)' }} />
                   <Box>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {users.length}
@@ -317,7 +317,7 @@ const AdminPanel = () => {
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <SkillIcon sx={{ fontSize: 50, color: '#764ba2' }} />
+                  <SkillIcon sx={{ fontSize: 50, color: 'var(--secondary-color)' }} />
                   <Box>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {getTotalSkillsCount()}
@@ -414,7 +414,7 @@ const AdminPanel = () => {
                 startIcon={<SkillIcon />}
                 onClick={() => setSkillDialogOpen(true)}
                 sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'var(--primary-gradient)',
                 }}
               >
                 Yeni Yetenek Ekle
@@ -459,8 +459,8 @@ const AdminPanel = () => {
                               justifyContent: 'space-between',
                               alignItems: 'center',
                               '&:hover': {
-                                borderColor: '#667eea',
-                                backgroundColor: '#f9f9ff',
+                                borderColor: 'var(--primary-accent)',
+                                backgroundColor: '#f0f6ff',
                               },
                             }}
                           >
@@ -562,11 +562,11 @@ const AdminPanel = () => {
                   minWidth: 'auto',
                   px: 2,
                   height: 56,
-                  borderColor: '#667eea',
-                  color: '#667eea',
+                  borderColor: 'var(--primary-accent)',
+                  color: 'var(--primary-accent)',
                   '&:hover': {
-                    borderColor: '#764ba2',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderColor: 'var(--secondary-color)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.08)',
                   },
                 }}
                 title="Yeni Kategori Ekle"

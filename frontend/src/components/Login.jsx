@@ -114,7 +114,7 @@ const Login = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'var(--primary-gradient)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -199,7 +199,7 @@ const Login = () => {
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2">
                 Hesabınız yok mu?{' '}
-                <Link to="/register" style={{ textDecoration: 'none', color: 'primary.main' }}>
+                <Link to="/register" style={{ textDecoration: 'none', color: 'var(--primary-accent)' }}>
                   Kayıt Ol
                 </Link>
               </Typography>

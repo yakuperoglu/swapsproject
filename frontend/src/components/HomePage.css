@@ -45,18 +45,18 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }
 
 .home-nav button:hover {
-  color: #667eea;
-  background-color: rgba(102, 126, 234, 0.05);
+  color: var(--primary-accent);
+  background-color: rgba(37, 99, 235, 0.08);
 }
 
 .home-nav button.active {
-  color: #667eea;
+  color: var(--primary-accent);
   font-weight: 600;
 }
 
@@ -68,17 +68,17 @@
   font-weight: 600;
   text-decoration: none;
   color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   padding: 0.7rem 1.5rem;
   border-radius: 25px;
   transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.2);
   display: inline-block;
 }
 
 .profile-section a:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
 }
 
 .home-content {

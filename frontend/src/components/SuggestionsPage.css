@@ -8,7 +8,7 @@
 
 .share-button {
   border: none;
-  background: linear-gradient(135deg, #ff7ad7 0%, #ff4fbf 100%);
+  background: var(--secondary-gradient);
   color: #fff;
   font-weight: 700;
   font-size: 1rem;
@@ -16,7 +16,7 @@
   border-radius: 28px;
   cursor: pointer;
   min-width: 200px;
-  box-shadow: 0 12px 30px rgba(255, 79, 191, 0.35);
+  box-shadow: 0 12px 30px rgba(14, 165, 233, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -28,14 +28,14 @@
 
 .share-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 35px rgba(255, 79, 191, 0.45);
+  box-shadow: 0 18px 35px rgba(14, 165, 233, 0.38);
 }
 
 .suggestions-hero {
   width: 100%;
   min-height: 220px;
   border-radius: 24px;
-  background: linear-gradient(120deg, #ff9ad4 0%, #f978b3 45%, #f3b0de 100%);
+  background: linear-gradient(120deg, #0f172a 0%, #1d4ed8 45%, #0ea5e9 100%);
   color: #fff;
   display: flex;
   align-items: flex-start;
@@ -142,19 +142,19 @@
 
 .share-submit {
   border: none;
-  background: linear-gradient(135deg, #f97eb2 0%, #ff6b35 100%);
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   color: #fff;
   font-weight: 700;
   padding: 0.85rem 2.5rem;
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 10px 25px rgba(249, 126, 178, 0.35);
+  box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .share-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(249, 126, 178, 0.45);
+  box-shadow: 0 15px 30px rgba(234, 88, 12, 0.35);
 }
 
 .topic-filter {
@@ -167,24 +167,24 @@
 .topic-chip {
   padding: 0.5rem 1.4rem;
   border-radius: 999px;
-  border: 1px solid rgba(249, 120, 179, 0.4);
+  border: 1px solid rgba(37, 99, 235, 0.3);
   background: #fff;
-  color: #f06fae;
+  color: var(--primary-accent);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .topic-chip:hover {
-  border-color: #f06fae;
-  background: rgba(249, 120, 179, 0.12);
+  border-color: var(--primary-accent);
+  background: rgba(37, 99, 235, 0.08);
 }
 
 .topic-chip.active {
-  background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
+  background: var(--primary-gradient);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 10px 20px rgba(255, 107, 53, 0.25);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.25);
 }
 
 .suggestion-grid {
