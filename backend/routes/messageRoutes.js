@@ -10,6 +10,9 @@ router.use(authMiddleware);
 // POST /api/messages -> Yeni mesaj gönder
 router.post('/', messageController.sendMessage);
 
+// GET /api/messages/conversations -> Tüm konuşmaları listele
+router.get('/conversations', messageController.getConversations);
+
 // GET /api/messages/conversation/:otherUserId -> İki kişi arasındaki konuşmayı getir
 router.get('/conversation/:otherUserId', messageController.getConversation);
 

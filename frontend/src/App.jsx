@@ -9,6 +9,8 @@ import Footer from './components/Footer';
 import HomePage from './components/HomePage';
 import ProfilePage from './components/ProfilePage';
 import DiscoverPage from './components/DiscoverPage';
+import RequestsPage from './components/RequestsPage';
+import MessagesPage from './components/MessagesPage';
 import SuggestionsPage from './components/SuggestionsPage';
 import AboutPage from './components/AboutPage';
 import ContactPage from './components/ContactPage';
@@ -41,6 +43,9 @@ function App() {
             />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/discover" element={<DiscoverPage />} />
+            <Route path="/requests" element={<RequestsPage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/messages/:userId" element={<MessagesPage />} />
             <Route path="/suggestions" element={<SuggestionsPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />

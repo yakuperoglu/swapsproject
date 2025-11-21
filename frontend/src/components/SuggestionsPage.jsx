@@ -217,6 +217,8 @@ const SuggestionsPage = () => {
   const menuItems = [
     { path: '/profile', label: 'Profil', icon: '👤' },
     { path: '/discover', label: 'Keşfet', icon: '🔍' },
+    { path: '/requests', label: 'İsteklerim', icon: '📬' },
+    { path: '/messages', label: 'Mesajlar', icon: '💬' },
     { path: '/suggestions', label: 'Öneriler', icon: '💡' },
   ];
 
@@ -301,18 +303,14 @@ const SuggestionsPage = () => {
           ))}
         </nav>
       </div>
-      <div className="profile-content">
-        <div className="suggestions-hero-wrapper">
-          <div className="suggestions-hero">
-            <div className="suggestions-hero-text">
-              <p className="hero-subtitle">Öneriler</p>
-              <p className="hero-description">
-                Öğrenmek istediğin yetenek için hazırladığımız önerilere göz at! Kendi
-                önerini paylaşarak diğer kullanıcıların da faydalanmasını
-                sağlayabilirsin.
-              </p>
-            </div>
-          </div>
+      <div className="profile-content suggestions-content">
+        <div className="suggestions-header">
+          <h1>Öneriler</h1>
+          <p className="suggestions-subtitle">
+            Öğrenmek istediğin yetenek için hazırladığımız önerilere göz at! Kendi
+            önerini paylaşarak diğer kullanıcıların da faydalanmasını
+            sağlayabilirsin.
+          </p>
           <button
             type="button"
             className="share-button"

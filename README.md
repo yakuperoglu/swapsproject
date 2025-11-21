@@ -1,109 +1,24 @@
-# SwapS-Project
+# SwapS Project
 
 SwapS: Proje tabanlı beceri takas platformu. Kullanıcılar projelerini ve ihtiyaç duydukları becerileri paylaşır; diğer kullanıcılar kendi becerileriyle katkı sunarak karşılıklı kazan-kazan (skill swap) modeliyle işbirliği yapar.
 
 ---
 
-## İçindekiler
+## Kurulum ve Çalıştırma Adımları
 
-- Özellikler
-- Mimari ve Klasör Yapısı
-- Gereksinimler
-- Kurulum
-- Çalıştırma
-- Ortam Değişkenleri (.env)
-- Proje Komutları
-- Geliştirme Rehberi
-- Test, Lint ve Format
-- Dağıtım (Deploy) Notları
-- Yol Haritası
-- Katkı ve Lisans
+### Gereksinimler
+- Node.js 18+
+- PostgreSQL 14+
+- npm veya yarn
 
----
-
-## Özellikler
-
-- Kullanıcı kaydı ve JWT tabanlı kimlik doğrulama
-- Proje oluşturma ve yönetim sistemi
-- Kullanıcı profili ve beceri etiketleri yönetimi
-- **Kullanıcı beceri sistemi** (Offering/Seeking)
-- **Karşılıklı eşleşme algoritması** (Reciprocal Matching)
-- Başvuru ve teklif yönetimi (Matches)
-- Eşleşme ve iletişim akışı (örn. mesajlaşma/yorumlar)
-- Admin paneli (Kullanıcı ve beceri yönetimi)
-- Dashboard görev yönetimi
-- Değerlendirme/geri bildirim sistemi (ileride)
-
-> Not: Özelliklerin kapsamı ve detayları geliştirme ilerledikçe güncellenecektir.
-
-## Mimari ve Klasör Yapısı
-
-Monorepo düzeni ile `backend` ve `frontend` dizinleri:
-
-```
-.
-├─ backend/         # Sunucu tarafı kodu (Node.js/Express + PostgreSQL)
-│  ├─ config/       # Veritabanı konfigürasyonu
-│  ├─ controllers/  # İş mantığı kontrolcüleri
-│  ├─ middleware/   # JWT authentication middleware
-│  ├─ routes/       # API route tanımlamaları
-│  ├─ index.js      # Ana sunucu dosyası
-│  └─ sema.sql      # Veritabanı şema tanımları
-└─ frontend/        # İstemci tarafı uygulama (React + Vite)
-   ├─ src/
-   │  ├─ components/ # React bileşenleri
-   │  ├─ services/   # API servisleri
-   │  └─ App.jsx     # Ana uygulama
-   └─ public/        # Statik dosyalar
-```
-
-### Veritabanı Yapısı (PostgreSQL)
-
-- **Kullanicilar** - Kullanıcı hesapları ve kimlik bilgileri
-- **Yetenekler** - Beceri/yetenek katalogu (kategori bazlı)
-- **User_Skill** 🆕 - Kullanıcı-Beceri ilişkisi (Offering/Seeking)
-- **Projects** - Kullanıcı projeleri
-- **Matches** - Proje başvuruları ve eşleşmeler
-- **Messages** - Kullanıcı mesajlaşma sistemi
-
-## Gereksinimler
-
-- Git
-- Node.js 18+ ve paket yöneticisi (npm / yarn / pnpm) veya
-- Python/Java/Go gibi alternatif backend yığını (seçime göre güncellenecek)
-- Bir veritabanı (PostgreSQL önerilir) – opsiyonel, yığındaki karara göre
-
-## Kurulum
-
-1) Depoyu klonlayın:
+### 1. Projeyi Klonlayın
 
 ```bash
 git clone https://github.com/USERNAME/SwapS-Project.git
 cd SwapS-Project
 ```
 
-2) Ortam değişkeni dosyalarını oluşturun (örnek aşağıda):
-
-```bash
-cp backend/.env.example backend/.env  # yoksa oluşturun
-cp frontend/.env.example frontend/.env # yoksa oluşturun
-```
-
-3) Bağımlılıkları kurun (seçeceğiniz yığına göre):
-
-```bash
-# Node.js tabanlı ise
-cd frontend && npm install && cd ..
-cd backend  && npm install && cd ..
-
-# Alternatif: Python tabanlı backend ise (örnek)
-# cd backend && python -m venv .venv && source .venv/bin/activate
-# pip install -r requirements.txt && cd ..
-```
-
-## Çalıştırma
-
-### 1. PostgreSQL Veritabanını Hazırlayın
+### 2. PostgreSQL Veritabanını Oluşturun
 
 ```bash
 # PostgreSQL'e bağlanın
@@ -116,29 +31,18 @@ CREATE DATABASE swaps_db;
 \q
 ```
 
-> **Not:** Şema otomatik olarak ilk çalıştırmada oluşturulur. Manuel olarak oluşturmak için `backend/sema.sql` dosyasını kullanabilirsiniz.
-
-### 2. Backend'i Başlatın
+### 3. Backend Kurulumu
 
 ```bash
 cd backend
 npm install
-node index.js
-# Sunucu http://localhost:3000 adresinde başlatılacak
+
+# .env dosyasını oluşturun
+cp .env.example .env
 ```
 
-### 3. Frontend'i Başlatın
+**Backend .env dosyasını düzenleyin:**
 
-```bash
-cd frontend
-npm install
-npm run dev
-# Uygulama http://localhost:5173 adresinde açılacak
-```
-
-## Ortam Değişkenleri (.env)
-
-### Backend (.env)
 ```env
 NODE_ENV=development
 PORT=3000
@@ -157,140 +61,151 @@ JWT_SECRET=your_super_secret_key_here
 FRONTEND_URL=http://localhost:5173
 ```
 
-### Frontend (.env)
+**Backend'i başlatın:**
+
+```bash
+node index.js
+# Sunucu http://localhost:3000 adresinde başlatılacak
+```
+
+> **Not:** Veritabanı şeması ilk çalıştırmada otomatik olarak oluşturulur.
+
+### 4. Frontend Kurulumu
+
+Yeni bir terminal açın:
+
+```bash
+cd frontend
+npm install
+
+# .env dosyasını oluşturun (gerekirse)
+```
+
+**Frontend .env dosyası:**
+
 ```env
 VITE_API_BASE_URL=http://localhost:3000
 ```
 
-## Proje Komutları
-
-Aşağıdaki komutlar örnek olup projenin gerçek yığınına göre güncellenmelidir.
+**Frontend'i başlatın:**
 
 ```bash
-# Frontend
-npm run dev       # Geliştirme sunucusu
-npm run build     # Üretim derlemesi
-npm run preview   # Üretim derlemesini lokalde önizleme
-
-# Backend
-npm run dev       # Geliştirme sunucusu (hot-reload)
-npm run build     # Üretim derlemesi
-npm start         # Üretim çalıştırma
+npm run dev
+# Uygulama http://localhost:5173 adresinde açılacak
 ```
 
-## Geliştirme Rehberi
+---
 
-- Dal (branch) stratejisi: `main` kararlı, özellikler için `feature/<isim>` dalları
-- Commit biçimi: Anlaşılır, atomik ve tek konu odaklı
-- Kod inceleme (PR) gereklidir; küçük de olsa PR açın
-- Kod okunabilirliğini ve test kapsamını koruyun
+## Kullanıcı Giriş Bilgileri
 
+### Admin Hesabı
+- **Email:** admin1@gmail.com
+- **Şifre:** admin-1
 
-## Dağıtım (Deploy) Notları
+### Test Kullanıcı Hesapları
+Sisteme kayıt olarak yeni kullanıcı oluşturabilirsiniz veya mevcut test kullanıcıları kullanabilirsiniz (veritabanında varsa).
 
-### Backend + Database: Render.com
-- **Backend Web Service:** Node.js uygulaması olarak deploy edilir
-- **PostgreSQL Database:** Render PostgreSQL (Free plan mevcut)
-- Detaylı kurulum için: [README-RENDER-SETUP.md](./README-RENDER-SETUP.md) dosyasına bakın
+---
 
-### Frontend: Render Static Site (veya Vercel)
-- **Render Static Site:** Basit ve hızlı deploy
-- **Alternatif Vercel:** Frontend için Vercel de kullanılabilir
+## API Endpoint Listesi
 
-### Hızlı Deploy (render.yaml ile)
-Proje kök dizininde `render.yaml` dosyası mevcut. Bu dosya ile tek tıkla deploy:
-
-1. [Render.com](https://render.com) → New + → Blueprint
-2. GitHub repository'nizi bağlayın
-3. Apply butonuna tıklayın
-4. Tüm servisler (Database, Backend, Frontend) otomatik oluşturulur
-
-### Environment Variables
-
-**Backend (Render Web Service):**
-```env
-NODE_ENV=production
-PORT=3000
-DB_HOST=<from-database>
-DB_PORT=5432
-DB_USER=<from-database>
-DB_PASSWORD=<from-database>
-DB_NAME=<from-database>
-JWT_SECRET=<strong-random-secret>
-FRONTEND_URL=<frontend-url>
-```
-
-**Frontend (Static Site):**
-```env
-VITE_API_BASE_URL=<backend-url>
-```
-
-### CI/CD
-- Render otomatik olarak main branch'teki her commit'i deploy eder
-- Preview environments için PR branch'leri kullanabilirsiniz
-
-## API Dokümantasyonu
+### Base URL
+- **Local:** `http://localhost:3000`
+- **Production:** `https://swaps-backend.onrender.com`
 
 ### Kimlik Doğrulama
-- `POST /api/auth/register` - Kullanıcı kaydı
+- `POST /api/auth/register` - Yeni kullanıcı kaydı
+  - Body: `{ username, email, password }`
 - `POST /api/auth/login` - Kullanıcı girişi
+  - Body: `{ email, password }`
 
 ### Kullanıcı Profili
-- `GET /api/profile/:userId` - Kullanıcı profili getir
-- `POST /api/profile/save-settings` - Profil ayarlarını kaydet
-- `DELETE /api/profile/delete-account/:userId` - Hesap sil
+- `GET /api/profile/:userId` - Kullanıcı profilini getir
+- `POST /api/profile/save-settings` - Profil ayarlarını kaydet 🔒
+  - Body: `{ userId, profileData }`
+- `DELETE /api/profile/delete-account/:userId` - Hesabı sil 🔒
 
 ### Yetenekler (Skills)
 - `GET /api/skills` - Tüm yetenekleri listele
-- `POST /api/skills` - Yeni yetenek ekle
-- `PUT /api/skills/:skillId` - Yetenek güncelle
-- `DELETE /api/skills/:skillId` - Yetenek sil
+- `POST /api/skills` - Yeni yetenek ekle 🔒
+  - Body: `{ name, category }`
+- `PUT /api/skills/:skillId` - Yetenek güncelle 🔒
+  - Body: `{ name, category }`
+- `DELETE /api/skills/:skillId` - Yetenek sil 🔒
 - `GET /api/categories` - Tüm kategorileri listele
 
-### Kullanıcı Becerileri (User Skills) 🆕
+### Kullanıcı Becerileri (User Skills)
 - `GET /user-skills/:userId` - Kullanıcının becerilerini getir (Offering/Seeking)
-- `POST /user-skills` - Kullanıcıya beceri ekle (Token gerekli)
-- `DELETE /user-skills/:id` - Kullanıcıdan beceri sil (Token gerekli)
+- `POST /user-skills` - Kullanıcıya beceri ekle 🔒
+  - Body: `{ skill_id, type }` (type: "Offering" veya "Seeking")
+- `DELETE /user-skills/:id` - Kullanıcıdan beceri sil 🔒
 
-### Karşılıklı Eşleşme (Reciprocal Matching) 🆕
-- `GET /swaps/reciprocal` - İki yönlü beceri eşleşmelerini getir (Token gerekli)
+### Karşılıklı Eşleşme (Reciprocal Matching)
+- `GET /swaps/reciprocal` - İki yönlü beceri eşleşmelerini getir 🔒
   - Kullanıcı A'nın Seeking becerileri = Kullanıcı B'nin Offering becerileri
   - Kullanıcı B'nin Seeking becerileri = Kullanıcı A'nın Offering becerileri
 
 ### Projeler
 - `GET /projects` - Tüm projeleri listele
 - `GET /projects/:id` - Proje detayı
-- `GET /projects/my` - Kullanıcının projeleri (Token gerekli)
-- `POST /projects` - Yeni proje oluştur (Token gerekli)
-- `PUT /projects/:id` - Proje güncelle (Token gerekli)
-- `DELETE /projects/:id` - Proje sil (Token gerekli)
+- `GET /projects/my` - Kullanıcının projeleri 🔒
+- `POST /projects` - Yeni proje oluştur 🔒
+  - Body: `{ title, description }`
+- `PUT /projects/:id` - Proje güncelle 🔒
+  - Body: `{ title, description }`
+- `DELETE /projects/:id` - Proje sil 🔒
 
 ### Başvurular (Matches)
-- `GET /matches/user` - Kullanıcının başvurularını listele (Token gerekli)
-- `POST /matches` - Projeye başvur (Token gerekli)
-- `PUT /matches/:id/status` - Başvuru durumu güncelle (Token gerekli)
-- `DELETE /matches/:id` - Başvuru sil (Token gerekli)
+- `GET /matches/user` - Kullanıcının başvurularını listele 🔒
+- `POST /matches` - Projeye başvur 🔒
+  - Body: `{ project_id }`
+- `PUT /matches/:id/status` - Başvuru durumu güncelle 🔒
+  - Body: `{ status }` (status: "Pending", "Accepted", "Rejected")
+- `DELETE /matches/:id` - Başvuru sil 🔒
 
 ### Dashboard
-- `GET /user/tasks?filter=ongoing` - Devam eden işler
-- `GET /user/tasks?filter=offers` - Bekleyen teklifler
-- `GET /user/tasks?filter=suggestions` - Önerilen projeler
+- `GET /user/tasks?filter=ongoing` - Devam eden işler 🔒
+- `GET /user/tasks?filter=offers` - Bekleyen teklifler 🔒
+- `GET /user/tasks?filter=suggestions` - Önerilen projeler 🔒
+
+### Mesajlaşma
+- `POST /api/messages` - Yeni mesaj gönder 🔒
+  - Body: `{ receiver_id, content }`
+- `GET /api/messages/conversations` - Tüm konuşmaları listele 🔒
+- `GET /api/messages/conversation/:otherUserId` - İki kişi arasındaki konuşmayı getir 🔒
+
+### Eşleşme İstekleri (Swap Requests)
+- `POST /swap-requests` - Eşleşme isteği gönder 🔒
+  - Body: `{ receiver_id }`
+- `GET /swap-requests` - Gelen/giden eşleşme isteklerini getir 🔒
+- `PUT /swap-requests/:id/status` - İstek durumu güncelle 🔒
+  - Body: `{ status }` (status: "Accepted", "Rejected")
 
 ### Admin
-- `GET /api/admin/users` - Tüm kullanıcıları listele
-- `PUT /api/admin/users/:userId` - Kullanıcı güncelle
-- `DELETE /api/admin/users/:userId` - Kullanıcı sil
+- `GET /api/admin/users` - Tüm kullanıcıları listele 🔒
+- `PUT /api/admin/users/:userId` - Kullanıcı güncelle 🔒
+  - Body: `{ username, email, profileData }`
+- `DELETE /api/admin/users/:userId` - Kullanıcı sil 🔒
 
 > **Not:** 🔒 Token gerekli endpoint'ler için `Authorization: Bearer <TOKEN>` header'ı gereklidir.
 
-## Yol Haritası
+---
 
-- ✅ MVP: Proje ve beceri ilanları, başvuru/katılım, temel profil
-- ✅ Kullanıcı beceri sistemi (Offering/Seeking)
-- ✅ Karşılıklı eşleşme algoritması (Reciprocal Matching)
-- ⏳ Mesajlaşma/işbirliği araçları
-- ⏳ Bildirim sistemi
-- ⏳ Değerlendirme ve rozetler
-- ⏳ Mobil uyum ve erişilebilirlik iyileştirmeleri
+## Canlı Proje Linki
 
+### 🌐 Production (Render.com)
 
+**Frontend:** [https://swaps.com.tr](https://swaps.com.tr)
+
+**Backend API:** [https://swaps-backend.onrender.com](https://swaps-backend.onrender.com)
+
+### Deployment Bilgisi
+- **Hosting:** Render.com (Free Tier)
+- **Database:** PostgreSQL (Render Managed)
+- **Auto-Deploy:** Her commit'te otomatik deploy edilir
+
+---
+
+## Lisans
+
+MIT License

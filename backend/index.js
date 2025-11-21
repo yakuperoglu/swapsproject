@@ -145,6 +145,10 @@ app.use((req, res, next) => {
 // JSON ayarı
 app.use(express.json());
 
+// Mesajlaşma route'ları
+const messageRoutes = require('./routes/messageRoutes');
+app.use('/api/messages', messageRoutes);
+
 // 5. Ana Test Endpoint'i
 app.get('/', (req, res) => {
     res.json({ message: 'SwapS Backend API calisiyor! Hos geldiniz.' });
@@ -1719,6 +1723,58 @@ app.delete('/user-skills/:id', authenticateToken, async (req, res) => {
 // SWAPS API - KARŞILIKLI EŞLEŞME (RECIPROCAL MATCHING)
 // ============================================
 
+// DEBUG: User_Skill verilerini kontrol et (geçici)
+app.get('/debug/user-skills', authenticateToken, async (req, res) => {
+    try {
+        const user_id = req.user.id;
+        
+        if (useInMemoryDB || !db) {
+            return res.status(501).json({ message: 'PostgreSQL gerekli' });
+        }
+
+        // Tüm kullanıcıların becerilerini getir
+        const allSkills = await db.query(`
+            SELECT 
+                us.id,
+                us.user_id,
+                us.skill_id,
+                us.type,
+                u.kullanici_adi,
+                y.name as skill_name,
+                y.category as skill_category
+            FROM User_Skill us
+            JOIN Kullanicilar u ON us.user_id = u.id
+            JOIN Yetenekler y ON us.skill_id = y.id
+            ORDER BY us.user_id, us.type
+        `);
+
+        // Mevcut kullanıcının becerilerini getir
+        const currentUserSkills = await db.query(`
+            SELECT 
+                us.id,
+                us.skill_id,
+                us.type,
+                y.name as skill_name,
+                y.category as skill_category
+            FROM User_Skill us
+            JOIN Yetenekler y ON us.skill_id = y.id
+            WHERE us.user_id = $1
+            ORDER BY us.type, y.name
+        `, [user_id]);
+
+        res.status(200).json({
+            success: true,
+            current_user_id: user_id,
+            current_user_skills: currentUserSkills.rows,
+            all_user_skills: allSkills.rows,
+            total_records: allSkills.rows.length
+        });
+    } catch (error) {
+        console.error('Debug error:', error);
+        res.status(500).json({ message: 'Sunucu hatasi: ' + error.message });
+    }
+});
+
 // 31. KARŞILIKLI EŞLEŞME - RECIPROCAL MATCHING (GET /swaps/reciprocal)
 // Token'dan gelen kullanıcı için, iki yönlü beceri eşleşmesi olan kullanıcıları listeler
 // Mantık:
@@ -1740,6 +1796,7 @@ app.get('/swaps/reciprocal', authenticateToken, async (req, res) => {
         // PostgreSQL kullanılıyorsa
         try {
             // Karmaşık SQL sorgusu: İki yönlü eşleşme
+            // jsonb_agg kullanarak ve COALESCE ile NULL kontrolü yapıyoruz
             const sql = `
                 SELECT DISTINCT
                     u.id,
@@ -1747,42 +1804,48 @@ app.get('/swaps/reciprocal', authenticateToken, async (req, res) => {
                     u.email,
                     u.olusturulma_tarihi,
                     -- A'nın Seeking becerileri ve B'nin karşılayan Offering becerileri
-                    (
-                        SELECT json_agg(
-                            json_build_object(
-                                'skill_id', y.id,
-                                'skill_name', y.name,
-                                'skill_category', y.category
+                    COALESCE(
+                        (
+                            SELECT jsonb_agg(
+                                jsonb_build_object(
+                                    'skill_id', y.id,
+                                    'skill_name', y.name,
+                                    'skill_category', y.category
+                                )
                             )
-                        )
-                        FROM User_Skill us_a_seeking
-                        INNER JOIN User_Skill us_b_offering 
-                            ON us_a_seeking.skill_id = us_b_offering.skill_id
-                        INNER JOIN Yetenekler y 
-                            ON us_a_seeking.skill_id = y.id
-                        WHERE us_a_seeking.user_id = $1
-                        AND us_a_seeking.type = 'Seeking'
-                        AND us_b_offering.user_id = u.id
-                        AND us_b_offering.type = 'Offering'
+                            FROM User_Skill us_a_seeking
+                            INNER JOIN User_Skill us_b_offering 
+                                ON us_a_seeking.skill_id = us_b_offering.skill_id
+                            INNER JOIN Yetenekler y 
+                                ON us_a_seeking.skill_id = y.id
+                            WHERE us_a_seeking.user_id = $1
+                            AND us_a_seeking.type = 'Seeking'
+                            AND us_b_offering.user_id = u.id
+                            AND us_b_offering.type = 'Offering'
+                        ),
+                        '[]'::jsonb
                     ) as matched_skills_a_needs,
                     -- B'nin Seeking becerileri ve A'nın karşılayan Offering becerileri
-                    (
-                        SELECT json_agg(
-                            json_build_object(
-                                'skill_id', y.id,
-                                'skill_name', y.name,
-                                'skill_category', y.category
+                    COALESCE(
+                        (
+                            SELECT jsonb_agg(
+                                jsonb_build_object(
+                                    'skill_id', y.id,
+                                    'skill_name', y.name,
+                                    'skill_category', y.category
+                                )
                             )
-                        )
-                        FROM User_Skill us_b_seeking
-                        INNER JOIN User_Skill us_a_offering 
-                            ON us_b_seeking.skill_id = us_a_offering.skill_id
-                        INNER JOIN Yetenekler y 
-                            ON us_b_seeking.skill_id = y.id
-                        WHERE us_b_seeking.user_id = u.id
-                        AND us_b_seeking.type = 'Seeking'
-                        AND us_a_offering.user_id = $1
-                        AND us_a_offering.type = 'Offering'
+                            FROM User_Skill us_b_seeking
+                            INNER JOIN User_Skill us_a_offering 
+                                ON us_b_seeking.skill_id = us_a_offering.skill_id
+                            INNER JOIN Yetenekler y 
+                                ON us_b_seeking.skill_id = y.id
+                            WHERE us_b_seeking.user_id = u.id
+                            AND us_b_seeking.type = 'Seeking'
+                            AND us_a_offering.user_id = $1
+                            AND us_a_offering.type = 'Offering'
+                        ),
+                        '[]'::jsonb
                     ) as matched_skills_b_needs
                 FROM Kullanicilar u
                 WHERE u.id != $1  -- Kendini eşleştirme
@@ -1808,17 +1871,32 @@ app.get('/swaps/reciprocal', authenticateToken, async (req, res) => {
                     AND us_a_offering.user_id = $1
                     AND us_a_offering.type = 'Offering'
                 )
+                AND NOT EXISTS (
+                    -- Koşul 3: A ile B arasında kabul edilmiş bir swap request yok
+                    SELECT 1
+                    FROM Swap_Requests sr
+                    WHERE ((sr.sender_id = $1 AND sr.receiver_id = u.id) 
+                           OR (sr.sender_id = u.id AND sr.receiver_id = $1))
+                    AND sr.status = 'Accepted'
+                )
                 ORDER BY u.kullanici_adi
             `;
 
             const results = await db.query(sql, [user_id]);
+            
+            // JSONB sonuçlarını düzgün bir şekilde işle
+            const processedResults = results.rows.map(row => ({
+                ...row,
+                matched_skills_a_needs: row.matched_skills_a_needs || [],
+                matched_skills_b_needs: row.matched_skills_b_needs || []
+            }));
 
             res.status(200).json({
                 success: true,
                 message: 'Karsilikli eslesmeler basariyla getirildi!',
                 user_id: user_id,
-                matches_count: results.rows.length,
-                matches: results.rows
+                matches_count: processedResults.length,
+                matches: processedResults
             });
 
         } catch (dbError) {
@@ -2052,6 +2130,261 @@ app.get('/user/tasks', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error('Gorev listesi hatasi:', error);
+        res.status(500).json({ message: 'Sunucu hatasi: ' + error.message });
+    }
+});
+
+// ============================================
+// SWAP REQUESTS API - EŞLEŞME İSTEKLERİ
+// ============================================
+
+// 34. EŞLEŞME İSTEĞİ GÖNDER (POST /swap-requests)
+app.post('/swap-requests', authenticateToken, async (req, res) => {
+    try {
+        const { receiver_id } = req.body;
+        const sender_id = req.user.id;
+
+        if (!receiver_id) {
+            return res.status(400).json({ message: 'Alıcı kullanıcı ID gereklidir.' });
+        }
+
+        if (sender_id == receiver_id) {
+            return res.status(400).json({ message: 'Kendinize istek gönderemezsiniz.' });
+        }
+
+        // In-memory kullanılıyorsa
+        if (useInMemoryDB || !db) {
+            return res.status(501).json({
+                success: false,
+                message: 'Swap requests sadece PostgreSQL ile destekleniyor.'
+            });
+        }
+
+        // PostgreSQL kullanılıyorsa
+        try {
+            // Alıcı kullanıcının varlığını kontrol et
+            const receiverCheck = await db.query('SELECT id FROM Kullanicilar WHERE id = $1', [receiver_id]);
+            if (receiverCheck.rows.length === 0) {
+                return res.status(404).json({ message: 'Alıcı kullanıcı bulunamadı.' });
+            }
+
+            // Zaten istek gönderilmiş mi kontrol et
+            const existingRequest = await db.query(
+                'SELECT id, status FROM Swap_Requests WHERE sender_id = $1 AND receiver_id = $2',
+                [sender_id, receiver_id]
+            );
+
+            if (existingRequest.rows.length > 0) {
+                const request = existingRequest.rows[0];
+                if (request.status === 'Pending') {
+                    return res.status(400).json({ message: 'Bu kullanıcıya zaten istek gönderdiniz.' });
+                } else if (request.status === 'Accepted') {
+                    return res.status(400).json({ message: 'Bu kullanıcıyla zaten eşleşme kabul edildi.' });
+                }
+            }
+
+            // Yeni istek oluştur
+            const sql = `
+                INSERT INTO Swap_Requests (sender_id, receiver_id, status) 
+                VALUES ($1, $2, 'Pending') 
+                RETURNING *
+            `;
+
+            const result = await db.query(sql, [sender_id, receiver_id]);
+
+            res.status(201).json({
+                success: true,
+                message: 'Eşleşme isteği başarıyla gönderildi!',
+                request: result.rows[0]
+            });
+
+        } catch (dbError) {
+            if (dbError.code === '23505') { // UNIQUE constraint violation
+                return res.status(400).json({ message: 'Bu kullanıcıya zaten istek gönderdiniz.' });
+            }
+            console.error('Eşleşme isteği gönderilemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi: ' + dbError.message });
+        }
+
+    } catch (error) {
+        console.error('Swap request hatasi:', error);
+        res.status(500).json({ message: 'Sunucu hatasi: ' + error.message });
+    }
+});
+
+// 35. EŞLEŞME İSTEKLERİNİ GETİR (GET /swap-requests)
+// Gelen ve giden istekleri getirir
+app.get('/swap-requests', authenticateToken, async (req, res) => {
+    try {
+        const user_id = req.user.id;
+
+        // In-memory kullanılıyorsa
+        if (useInMemoryDB || !db) {
+            return res.status(501).json({
+                success: false,
+                message: 'Swap requests sadece PostgreSQL ile destekleniyor.',
+                incoming: [],
+                outgoing: [],
+                accepted: []
+            });
+        }
+
+        // PostgreSQL kullanılıyorsa
+        try {
+            // Gelen istekler (Pending)
+            const incomingQuery = `
+                SELECT 
+                    sr.id,
+                    sr.sender_id,
+                    sr.receiver_id,
+                    sr.status,
+                    sr.olusturulma_tarihi,
+                    u.kullanici_adi as sender_name,
+                    u.email as sender_email
+                FROM Swap_Requests sr
+                JOIN Kullanicilar u ON sr.sender_id = u.id
+                WHERE sr.receiver_id = $1 AND sr.status = 'Pending'
+                ORDER BY sr.olusturulma_tarihi DESC
+            `;
+            const incoming = await db.query(incomingQuery, [user_id]);
+
+            // Giden istekler (Pending)
+            const outgoingQuery = `
+                SELECT 
+                    sr.id,
+                    sr.sender_id,
+                    sr.receiver_id,
+                    sr.status,
+                    sr.olusturulma_tarihi,
+                    u.kullanici_adi as receiver_name,
+                    u.email as receiver_email
+                FROM Swap_Requests sr
+                JOIN Kullanicilar u ON sr.receiver_id = u.id
+                WHERE sr.sender_id = $1 AND sr.status = 'Pending'
+                ORDER BY sr.olusturulma_tarihi DESC
+            `;
+            const outgoing = await db.query(outgoingQuery, [user_id]);
+
+            // Kabul edilenler (Accepted - hem gönderen hem alan olarak)
+            const acceptedQuery = `
+                SELECT 
+                    sr.id,
+                    sr.sender_id,
+                    sr.receiver_id,
+                    sr.status,
+                    sr.olusturulma_tarihi,
+                    sr.guncelleme_tarihi,
+                    sender.kullanici_adi as sender_name,
+                    sender.email as sender_email,
+                    receiver.kullanici_adi as receiver_name,
+                    receiver.email as receiver_email,
+                    CASE 
+                        WHEN sr.sender_id = $1 THEN receiver.kullanici_adi
+                        ELSE sender.kullanici_adi
+                    END as other_user_name,
+                    CASE 
+                        WHEN sr.sender_id = $1 THEN receiver.email
+                        ELSE sender.email
+                    END as other_user_email
+                FROM Swap_Requests sr
+                JOIN Kullanicilar sender ON sr.sender_id = sender.id
+                JOIN Kullanicilar receiver ON sr.receiver_id = receiver.id
+                WHERE (sr.sender_id = $1 OR sr.receiver_id = $1) AND sr.status = 'Accepted'
+                ORDER BY sr.guncelleme_tarihi DESC
+            `;
+            const accepted = await db.query(acceptedQuery, [user_id]);
+
+            res.status(200).json({
+                success: true,
+                incoming: incoming.rows,
+                outgoing: outgoing.rows,
+                accepted: accepted.rows
+            });
+
+        } catch (dbError) {
+            console.error('Eşleşme istekleri getirilemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi: ' + dbError.message });
+        }
+
+    } catch (error) {
+        console.error('Swap requests hatasi:', error);
+        res.status(500).json({ message: 'Sunucu hatasi: ' + error.message });
+    }
+});
+
+// 36. EŞLEŞME İSTEĞİ DURUMU GÜNCELLE (PUT /swap-requests/:id/status)
+// Sadece alıcı kullanıcı kabul/red edebilir
+app.put('/swap-requests/:id/status', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const user_id = req.user.id;
+
+        if (!status || !['Accepted', 'Rejected'].includes(status)) {
+            return res.status(400).json({ 
+                message: 'Gecerli bir durum belirtmelisiniz: Accepted veya Rejected' 
+            });
+        }
+
+        // In-memory kullanılıyorsa
+        if (useInMemoryDB || !db) {
+            return res.status(501).json({
+                success: false,
+                message: 'Swap requests sadece PostgreSQL ile destekleniyor.'
+            });
+        }
+
+        // PostgreSQL kullanılıyorsa
+        try {
+            // İsteği bul ve alıcı kontrolü yap
+            const requestCheck = await db.query(
+                'SELECT id, receiver_id, status FROM Swap_Requests WHERE id = $1',
+                [id]
+            );
+
+            if (requestCheck.rows.length === 0) {
+                return res.status(404).json({ message: 'Eşleşme isteği bulunamadı.' });
+            }
+
+            const request = requestCheck.rows[0];
+
+            // Sadece alıcı kullanıcı durumu değiştirebilir
+            if (request.receiver_id != user_id) {
+                return res.status(403).json({ 
+                    message: 'Bu isteği sadece alıcı kullanıcı kabul/red edebilir.' 
+                });
+            }
+
+            // Zaten işlenmiş mi kontrol et
+            if (request.status !== 'Pending') {
+                return res.status(400).json({ 
+                    message: `Bu istek zaten ${request.status === 'Accepted' ? 'kabul edilmiş' : 'reddedilmiş'}.` 
+                });
+            }
+
+            // Durumu güncelle
+            const updateQuery = `
+                UPDATE Swap_Requests 
+                SET status = $1, guncelleme_tarihi = CURRENT_TIMESTAMP
+                WHERE id = $2 
+                RETURNING *
+            `;
+
+            const result = await db.query(updateQuery, [status, id]);
+
+            res.status(200).json({
+                success: true,
+                message: `Eşleşme isteği ${status === 'Accepted' ? 'kabul edildi' : 'reddedildi'}!`,
+                request: result.rows[0]
+            });
+
+        } catch (dbError) {
+            console.error('Eşleşme isteği guncellenemedi:', dbError);
+            return res.status(500).json({ message: 'Sunucu hatasi: ' + dbError.message });
+        }
+
+    } catch (error) {
+        console.error('Swap request status hatasi:', error);
         res.status(500).json({ message: 'Sunucu hatasi: ' + error.message });
     }
 });

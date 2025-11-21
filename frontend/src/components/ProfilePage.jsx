@@ -22,9 +22,26 @@ import {
   DialogContentText,
   DialogActions,
 } from '@mui/material';
-import { Edit, Save, Cancel, Delete, Add, Close, Warning } from '@mui/icons-material';
+import { 
+  Edit, 
+  Save, 
+  Cancel, 
+  Delete, 
+  Add, 
+  Close, 
+  Warning,
+  Code,
+  School,
+  Work,
+  LocationOn,
+  CalendarToday,
+  Person,
+  Psychology,
+  Favorite
+} from '@mui/icons-material';
 import authService from '../services/authService';
 import skillsService from '../services/skillsService';
+import swapsService from '../services/swapsService';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
@@ -526,11 +543,68 @@ const ProfilePage = () => {
       if (result.success) {
         // Başarılı ise localStorage'a da kaydet
         localStorage.setItem(profileKey, JSON.stringify(tempProfileData));
+
+        // Şimdi becerileri User_Skill tablosuna kaydet
+        try {
+          // Önce mevcut User_Skill kayıtlarını al
+          const currentSkillsResult = await swapsService.getUserSkills(userId);
+          const currentSkills = currentSkillsResult.success ? currentSkillsResult.data : { offering: [], seeking: [] };
+
+          // Tüm skill'leri al (skill_id bulmak için)
+          const allSkillsList = await skillsService.getAllSkills();
+          const skillsMap = new Map();
+          allSkillsList.forEach(skill => {
+            const key = `${skill.name.toLowerCase()}_${skill.category.toLowerCase()}`;
+            skillsMap.set(key, skill.id);
+          });
+
+          // Mevcut kayıtları sil (önce sil, sonra ekle - basit yaklaşım)
+          const allCurrentUserSkills = [
+            ...(currentSkills.offering || []),
+            ...(currentSkills.seeking || [])
+          ];
+          for (const userSkill of allCurrentUserSkills) {
+            await swapsService.deleteUserSkill(userSkill.id);
+          }
+
+          // Offering becerilerini ekle (sunduğu beceriler)
+          for (const [categoryKey, category] of Object.entries(skillCategories)) {
+            const skills = tempProfileData[categoryKey] || [];
+            for (const skillName of skills) {
+              const skillKey = `${skillName.toLowerCase()}_${category.label.toLowerCase()}`;
+              const skillId = skillsMap.get(skillKey);
+              if (skillId) {
+                await swapsService.addUserSkill(skillId, 'Offering');
+              }
+            }
+          }
+
+          // Seeking becerilerini ekle (öğrenmek istediği beceriler)
+          for (const [categoryKey, category] of Object.entries(skillCategories)) {
+            const skills = tempProfileData.wantToLearn?.[categoryKey] || [];
+            for (const skillName of skills) {
+              const skillKey = `${skillName.toLowerCase()}_${category.label.toLowerCase()}`;
+              const skillId = skillsMap.get(skillKey);
+              if (skillId) {
+                await swapsService.addUserSkill(skillId, 'Seeking');
+              }
+            }
+          }
+        } catch (skillError) {
+          console.error('Beceriler User_Skill tablosuna kaydedilirken hata:', skillError);
+          // Hata olsa bile profil kaydedildi, sadece uyarı ver
+          setSnackbar({
+            open: true,
+            message: 'Profil kaydedildi, ancak beceriler kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.',
+            severity: 'warning',
+          });
+        }
+
         setHasUnsavedChanges(false);
         setIsEditing(false);
         setSnackbar({
           open: true,
-          message: 'Profil bilgileriniz başarıyla kaydedildi!',
+          message: 'Profil bilgileriniz ve becerileriniz başarıyla kaydedildi!',
           severity: 'success',
         });
       } else {
@@ -597,6 +671,8 @@ const ProfilePage = () => {
   const menuItems = [
     { path: '/profile', label: 'Profil', icon: '👤' },
     { path: '/discover', label: 'Keşfet', icon: '🔍' },
+    { path: '/requests', label: 'İsteklerim', icon: '📬' },
+    { path: '/messages', label: 'Mesajlar', icon: '💬' },
     { path: '/suggestions', label: 'Öneriler', icon: '💡' },
   ];
 
@@ -623,6 +699,17 @@ const ProfilePage = () => {
   const allWantToLearnSkills = Object.keys(skillCategories).reduce((acc, categoryKey) => {
     return [...acc, ...(profileData.wantToLearn?.[categoryKey] || [])];
   }, []);
+
+  // Detaylı bilgilerin varlığını kontrol et
+  const hasDetailedInfo = !!(
+    profileData.surname ||
+    profileData.currentEducation ||
+    profileData.profession ||
+    profileData.job ||
+    profileData.city ||
+    profileData.country ||
+    (profileData.birthDay && profileData.birthMonth && profileData.birthYear)
+  );
 
   // Görüntüleme Modu
   if (!isEditing) {
@@ -686,114 +773,214 @@ const ProfilePage = () => {
             </button>
           </div>
         </div>
-        <div className="profile-content">
-          <div className="profile-view-container">
-            {/* Header */}
-            <div className="profile-header">
-              <div className="profile-header-bg"></div>
-              <div className="profile-header-content">
-                <div className="profile-info">
-                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                    {profileData.name || 'Kullanıcı Adı'}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      {profileData.location || 'Konum belirtilmemiş'}
-                    </Typography>
-                    {profileData.birthYear && (
-                      <Typography variant="body2" color="text.secondary">
-                        {new Date().getFullYear() - parseInt(profileData.birthYear)} yaşında
-                      </Typography>
-                    )}
-                  </Box>
-                  <Button
-                    variant="contained"
-                    startIcon={<Edit />}
-                    onClick={handleEditClick}
-                    sx={{
-                      background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
-                      },
-                      textTransform: 'uppercase',
-                      fontWeight: 700,
-                    }}
-                  >
-                    Profilimi Düzenle
-                  </Button>
-                </div>
-              </div>
-            </div>
+        <div className="profile-content profile-view-content">
+          <div className="profile-header-section">
+            <h1>{profileData.name || 'Kullanıcı Adı'}</h1>
+            <p className="profile-subtitle">
+              {profileData.location || 'Konum belirtilmemiş'}
+              {profileData.birthYear && ` • ${new Date().getFullYear() - parseInt(profileData.birthYear)} yaşında`}
+            </p>
+            <Box sx={{ mt: 2 }}>
+              <Button
+                variant="contained"
+                startIcon={<Edit />}
+                onClick={handleEditClick}
+                sx={{
+                  background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #84cc16 0%, #22c55e 100%)',
+                  },
+                  textTransform: 'uppercase',
+                  fontWeight: 700,
+                }}
+              >
+                Profilimi Düzenle
+              </Button>
+            </Box>
+          </div>
 
-            {/* Content */}
-            <div className="profile-view-content">
+          {/* Content */}
+          <div className="profile-main-content">
               <Grid container spacing={3}>
                 {/* Sol Taraf - Yetenekler ve Hakkında */}
                 <Grid item xs={12} md={4}>
-                  <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>
-                      Yetenekler
-                    </Typography>
+                  <Paper 
+                    elevation={0} 
+                    className="profile-card skills-card"
+                    sx={{ 
+                      p: 3, 
+                      mb: 3, 
+                      borderRadius: 3,
+                      border: '1px solid #e2e8f0',
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 12px 24px rgba(0, 0, 0, 0.1)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                      <Code sx={{ color: '#84cc16', fontSize: '1.75rem' }} />
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                        Yetenekler
+                      </Typography>
+                    </Box>
                     {allSkills.length > 0 ? (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {allSkills.map((skill, index) => (
-                  <Chip
+                          <Chip
                             key={index}
                             label={skill}
-                            size="small"
+                            size="medium"
                             sx={{
-                      background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
-                      color: '#0f172a',
-                              fontWeight: 500,
+                              background: 'linear-gradient(135deg, #a3e635 0%, #4ade80 100%)',
+                              color: '#0f172a',
+                              fontWeight: 600,
+                              fontSize: '0.875rem',
+                              height: '32px',
+                              boxShadow: '0 2px 8px rgba(163, 230, 53, 0.3)',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(163, 230, 53, 0.4)',
+                              }
                             }}
                           />
                         ))}
                       </Box>
                     ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        Henüz yetenek eklenmemiş.
-                      </Typography>
+                      <Box 
+                        sx={{ 
+                          padding: '1.5rem',
+                          textAlign: 'center',
+                          background: '#f8fafc',
+                          borderRadius: '12px',
+                          border: '2px dashed #cbd5e1'
+                        }}
+                      >
+                        <Code sx={{ fontSize: '2rem', color: '#cbd5e1', mb: 1 }} />
+                        <Typography variant="body2" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>
+                          Henüz yetenek eklenmemiş.
+                        </Typography>
+                      </Box>
                     )}
                   </Paper>
 
-                  <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>
-                      Öğrenmek İstedikleri
-                    </Typography>
+                  <Paper 
+                    elevation={0} 
+                    className="profile-card learning-card"
+                    sx={{ 
+                      p: 3, 
+                      mb: 3, 
+                      borderRadius: 3,
+                      border: '1px solid #e2e8f0',
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 12px 24px rgba(0, 0, 0, 0.1)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                      <Psychology sx={{ color: '#8b5cf6', fontSize: '1.75rem' }} />
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                        Öğrenmek İstedikleri
+                      </Typography>
+                    </Box>
                     {allWantToLearnSkills.length > 0 ? (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {allWantToLearnSkills.map((skill, index) => (
                           <Chip
                             key={index}
                             label={skill}
-                            size="small"
+                            size="medium"
                             sx={{
-                              background: 'var(--secondary-gradient)',
+                              background: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)',
                               color: 'white',
-                              fontWeight: 500,
+                              fontWeight: 600,
+                              fontSize: '0.875rem',
+                              height: '32px',
+                              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.4)',
+                              }
                             }}
                           />
                         ))}
                       </Box>
                     ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        Henüz öğrenmek istediği yetenek eklenmemiş.
-                      </Typography>
+                      <Box 
+                        sx={{ 
+                          padding: '1.5rem',
+                          textAlign: 'center',
+                          background: '#f8fafc',
+                          borderRadius: '12px',
+                          border: '2px dashed #cbd5e1'
+                        }}
+                      >
+                        <Psychology sx={{ fontSize: '2rem', color: '#cbd5e1', mb: 1 }} />
+                        <Typography variant="body2" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>
+                          Henüz öğrenmek istediği yetenek eklenmemiş.
+                        </Typography>
+                      </Box>
                     )}
                   </Paper>
 
-                  <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>
-                      Hakkında
-                    </Typography>
+                  <Paper 
+                    elevation={0} 
+                    className="profile-card about-card"
+                    sx={{ 
+                      p: 3, 
+                      borderRadius: 3,
+                      border: '1px solid #e2e8f0',
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 12px 24px rgba(0, 0, 0, 0.1)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                      <Person sx={{ color: '#3b82f6', fontSize: '1.75rem' }} />
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                        Hakkında
+                      </Typography>
+                    </Box>
                     {profileData.bio ? (
-                      <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          lineHeight: 1.8,
+                          color: '#475569',
+                          fontSize: '1rem',
+                          padding: '1rem',
+                          background: '#f8fafc',
+                          borderRadius: '12px',
+                          borderLeft: '3px solid #3b82f6'
+                        }}
+                      >
                         {profileData.bio}
                       </Typography>
                     ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        Henüz hakkında bilgisi eklenmemiş.
-                      </Typography>
+                      <Box 
+                        sx={{ 
+                          padding: '2rem',
+                          textAlign: 'center',
+                          background: '#f8fafc',
+                          borderRadius: '12px',
+                          border: '2px dashed #cbd5e1'
+                        }}
+                      >
+                        <Person sx={{ fontSize: '3rem', color: '#cbd5e1', mb: 1 }} />
+                        <Typography variant="body2" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>
+                          Henüz hakkında bilgisi eklenmemiş.
+                        </Typography>
+                      </Box>
                     )}
                   </Paper>
                 </Grid>
@@ -801,68 +988,165 @@ const ProfilePage = () => {
                 {/* Sağ Taraf - Detaylı Bilgiler (Büyük Kare) */}
                 <Grid item xs={12} md={8}>
                   <Paper 
-                    elevation={2} 
+                    elevation={0}
+                    className="profile-card details-card"
                     sx={{ 
                       p: 4, 
-                      borderRadius: 2,
+                      borderRadius: 3,
                       minHeight: '400px',
                       display: 'flex',
                       flexDirection: 'column',
+                      border: '1px solid #e2e8f0',
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 12px 24px rgba(0, 0, 0, 0.1)',
+                      }
                     }}
                   >
-                    <Typography variant="h6" sx={{ mb: 4, fontWeight: 600, color: '#333' }}>
-                      Detaylı Bilgiler
-                    </Typography>
-                    <Grid container spacing={3}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 4 }}>
+                      <Favorite sx={{ color: '#ef4444', fontSize: '1.75rem' }} />
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                        Detaylı Bilgiler
+                      </Typography>
+                    </Box>
+                    {hasDetailedInfo ? (
+                      <Grid container spacing={3}>
                       {profileData.surname && (
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Soyisim</Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>{profileData.surname}</Typography>
+                          <Box className="info-item">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <Person sx={{ color: '#64748b', fontSize: '1.2rem' }} />
+                              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem' }}>
+                                Soyisim
+                              </Typography>
+                            </Box>
+                            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e293b' }}>
+                              {profileData.surname}
+                            </Typography>
+                          </Box>
                         </Grid>
                       )}
                       {profileData.currentEducation && (
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Eğitim</Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>{profileData.currentEducation}</Typography>
+                          <Box className="info-item">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <School sx={{ color: '#64748b', fontSize: '1.2rem' }} />
+                              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem' }}>
+                                Eğitim
+                              </Typography>
+                            </Box>
+                            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e293b' }}>
+                              {profileData.currentEducation}
+                            </Typography>
+                          </Box>
                         </Grid>
                       )}
                       {profileData.profession && (
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Meslek</Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>{profileData.profession}</Typography>
+                          <Box className="info-item">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <Work sx={{ color: '#64748b', fontSize: '1.2rem' }} />
+                              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem' }}>
+                                Meslek
+                              </Typography>
+                            </Box>
+                            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e293b' }}>
+                              {profileData.profession}
+                            </Typography>
+                          </Box>
                         </Grid>
                       )}
                       {profileData.job && (
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>İş</Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>{profileData.job}</Typography>
+                          <Box className="info-item">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <Work sx={{ color: '#64748b', fontSize: '1.2rem' }} />
+                              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem' }}>
+                                İş
+                              </Typography>
+                            </Box>
+                            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e293b' }}>
+                              {profileData.job}
+                            </Typography>
+                          </Box>
                         </Grid>
                       )}
                       {profileData.city && (
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Şehir</Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>{profileData.city}</Typography>
+                          <Box className="info-item">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <LocationOn sx={{ color: '#64748b', fontSize: '1.2rem' }} />
+                              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem' }}>
+                                Şehir
+                              </Typography>
+                            </Box>
+                            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e293b' }}>
+                              {profileData.city}
+                            </Typography>
+                          </Box>
                         </Grid>
                       )}
                       {profileData.country && (
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Ülke</Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>{profileData.country}</Typography>
+                          <Box className="info-item">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <LocationOn sx={{ color: '#64748b', fontSize: '1.2rem' }} />
+                              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem' }}>
+                                Ülke
+                              </Typography>
+                            </Box>
+                            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e293b' }}>
+                              {profileData.country}
+                            </Typography>
+                          </Box>
                         </Grid>
                       )}
                       {profileData.birthDay && profileData.birthMonth && profileData.birthYear && (
                         <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Doğum Tarihi</Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>
-                            {profileData.birthDay}/{profileData.birthMonth}/{profileData.birthYear}
-                          </Typography>
+                          <Box className="info-item">
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                              <CalendarToday sx={{ color: '#64748b', fontSize: '1.2rem' }} />
+                              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.75rem' }}>
+                                Doğum Tarihi
+                              </Typography>
+                            </Box>
+                            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '1.1rem', color: '#1e293b' }}>
+                              {profileData.birthDay}/{profileData.birthMonth}/{profileData.birthYear}
+                            </Typography>
+                          </Box>
                         </Grid>
                       )}
                     </Grid>
+                    ) : (
+                      <Box 
+                        sx={{ 
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '4rem 2rem',
+                          textAlign: 'center',
+                          background: '#f8fafc',
+                          borderRadius: '12px',
+                          border: '2px dashed #cbd5e1',
+                          minHeight: '300px'
+                        }}
+                      >
+                        <Favorite sx={{ fontSize: '4rem', color: '#cbd5e1', mb: 2 }} />
+                        <Typography variant="h6" sx={{ color: '#94a3b8', mb: 1, fontWeight: 600 }}>
+                          Henüz detaylı bilgi eklenmemiş
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#cbd5e1', fontStyle: 'italic' }}>
+                          Profil düzenle sayfasından bilgilerinizi ekleyebilirsiniz
+                        </Typography>
+                      </Box>
+                    )}
                   </Paper>
                 </Grid>
               </Grid>
-            </div>
           </div>
         </div>
 

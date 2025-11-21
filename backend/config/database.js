@@ -208,6 +208,37 @@ async function createSchema() {
             CREATE INDEX IF NOT EXISTS idx_timestamp ON Messages(timestamp)
         `);
         
+        // Swap_Requests tablosu (Eşleşme İstekleri)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS Swap_Requests (
+                id SERIAL PRIMARY KEY,
+                sender_id INTEGER NOT NULL,
+                receiver_id INTEGER NOT NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'Pending' CHECK (status IN ('Pending', 'Accepted', 'Rejected')),
+                olusturulma_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                guncelleme_tarihi TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_sender
+                    FOREIGN KEY(sender_id) 
+                    REFERENCES Kullanicilar(id)
+                    ON DELETE CASCADE,
+                CONSTRAINT fk_receiver
+                    FOREIGN KEY(receiver_id) 
+                    REFERENCES Kullanicilar(id)
+                    ON DELETE CASCADE,
+                CONSTRAINT unique_swap_request UNIQUE (sender_id, receiver_id)
+            )
+        `);
+        
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_swap_sender ON Swap_Requests(sender_id)
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_swap_receiver ON Swap_Requests(receiver_id)
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_swap_status ON Swap_Requests(status)
+        `);
+        
         console.log('✅ Veritabanı şeması başarıyla oluşturuldu!');
         return true;
         

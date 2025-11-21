@@ -39,6 +39,126 @@
   line-height: 1.6;
 }
 
+/* Discover Content Styles */
+.discover-content {
+  padding: 2rem;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.discover-header {
+  margin-bottom: 2rem;
+}
+
+.discover-header h1 {
+  font-size: 2.5rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.discover-subtitle {
+  font-size: 1.1rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  line-height: 1.6;
+}
+
+/* Matches Grid */
+.matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Match Card */
+.match-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.match-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.match-card-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.match-card-header > div {
+  flex: 1;
+}
+
+.match-card-header h3 {
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+}
+
+.match-email {
+  font-size: 0.9rem;
+  color: #64748b;
+  display: block;
+}
+
+/* Match Skills Section */
+.match-skills-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.match-skills-group {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1rem;
+  border-left: 4px solid #3b82f6;
+}
+
+.match-skills-group:last-child {
+  border-left-color: #8b5cf6;
+}
+
+.match-skills-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.skill-icon {
+  font-size: 1.2rem;
+}
+
+.match-skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 2rem;
+  align-items: center;
+}
+
+.no-skills {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -50,6 +170,7 @@
   }
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
   .discover-page-container {
     padding: 2rem 1rem;
@@ -57,6 +178,27 @@
   
   .discover-page-container h1 {
     font-size: 2.2rem;
+  }
+
+  .discover-content {
+    padding: 1rem;
+  }
+
+  .matches-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .match-card {
+    padding: 1rem;
+  }
+
+  .match-card-header h3 {
+    font-size: 1.25rem;
+  }
+
+  .match-skills-group {
+    padding: 0.75rem;
   }
 }
 
