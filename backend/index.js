@@ -1808,12 +1808,12 @@ app.get('/debug/user-skills', authenticateToken, async (req, res) => {
     }
 });
 
-// 31. KARŞILIKLI EŞLEŞME - RECIPROCAL MATCHING (GET /swaps/reciprocal)
+// 31. KARŞILIKLI EŞLEŞME - RECIPROCAL MATCHING (GET /api/swaps/reciprocal)
 // Token'dan gelen kullanıcı için, iki yönlü beceri eşleşmesi olan kullanıcıları listeler
 // Mantık:
 // - Kullanıcı A'nın Seeking becerileri = Kullanıcı B'nin Offering becerileri
 // - Kullanıcı B'nin Seeking becerileri = Kullanıcı A'nın Offering becerileri
-app.get('/swaps/reciprocal', authenticateToken, async (req, res) => {
+app.get('/api/swaps/reciprocal', authenticateToken, async (req, res) => {
     try {
         const user_id = req.user.id; // Token'dan gelen kullanıcı ID'si (Kullanıcı A)
 
@@ -2171,8 +2171,8 @@ app.get('/user/tasks', authenticateToken, async (req, res) => {
 // SWAP REQUESTS API - EŞLEŞME İSTEKLERİ
 // ============================================
 
-// 34. EŞLEŞME İSTEĞİ GÖNDER (POST /swap-requests)
-app.post('/swap-requests', authenticateToken, async (req, res) => {
+// 34. EŞLEŞME İSTEĞİ GÖNDER (POST /api/swap-requests)
+app.post('/api/swap-requests', authenticateToken, async (req, res) => {
     try {
         const { receiver_id } = req.body;
         const sender_id = req.user.id;
@@ -2245,9 +2245,9 @@ app.post('/swap-requests', authenticateToken, async (req, res) => {
     }
 });
 
-// 35. EŞLEŞME İSTEKLERİNİ GETİR (GET /swap-requests)
+// 35. EŞLEŞME İSTEKLERİNİ GETİR (GET /api/swap-requests)
 // Gelen ve giden istekleri getirir
-app.get('/swap-requests', authenticateToken, async (req, res) => {
+app.get('/api/swap-requests', authenticateToken, async (req, res) => {
     try {
         const user_id = req.user.id;
 
@@ -2345,9 +2345,9 @@ app.get('/swap-requests', authenticateToken, async (req, res) => {
     }
 });
 
-// 36. EŞLEŞME İSTEĞİ DURUMU GÜNCELLE (PUT /swap-requests/:id/status)
+// 36. EŞLEŞME İSTEĞİ DURUMU GÜNCELLE (PUT /api/swap-requests/:id/status)
 // Sadece alıcı kullanıcı kabul/red edebilir
-app.put('/swap-requests/:id/status', authenticateToken, async (req, res) => {
+app.put('/api/swap-requests/:id/status', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;

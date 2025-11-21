@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:3000';
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:3000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -28,7 +28,7 @@ export const messageService = {
   // Mesaj gönder
   sendMessage: async (receiverId, content) => {
     try {
-      const response = await api.post('/api/messages', {
+      const response = await api.post('/messages', {
         receiver_id: receiverId,
         content: content,
       });
@@ -53,7 +53,7 @@ export const messageService = {
   // Konuşmayı getir
   getConversation: async (otherUserId) => {
     try {
-      const response = await api.get(`/api/messages/conversation/${otherUserId}`);
+      const response = await api.get(`/messages/conversation/${otherUserId}`);
       return {
         success: true,
         data: response.data,
@@ -75,7 +75,7 @@ export const messageService = {
   // Tüm konuşmaları listele
   getConversations: async () => {
     try {
-      const response = await api.get('/api/messages/conversations');
+      const response = await api.get('/messages/conversations');
       return {
         success: true,
         data: response.data,
