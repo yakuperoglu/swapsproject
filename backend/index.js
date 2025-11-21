@@ -251,6 +251,39 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(400).json({ message: 'Lutfen email ve sifre giriniz.' });
         }
 
+        // Mock kullanıcı kontrolü (Demo için)
+        // Mock User 1: user / user
+        if (email === 'user' && sifre === 'user') {
+            const token = generateToken(100001, 'user@demo.com', 'user');
+            
+            return res.status(200).json({
+                message: 'Giris basarili! (Demo User)',
+                user: {
+                    id: 100001,
+                    username: 'user',
+                    email: 'user@demo.com',
+                    role: 'user'
+                },
+                token: token
+            });
+        }
+
+        // Mock User 2: test / test
+        if (email === 'test' && sifre === 'test') {
+            const token = generateToken(100002, 'test@demo.com', 'user');
+            
+            return res.status(200).json({
+                message: 'Giris basarili! (Demo User)',
+                user: {
+                    id: 100002,
+                    username: 'test',
+                    email: 'test@demo.com',
+                    role: 'user'
+                },
+                token: token
+            });
+        }
+
         // Admin kontrolü
         if (email === 'admin1@gmail.com' && sifre === 'admin-1') {
             // Gerçek JWT token oluştur (admin için)

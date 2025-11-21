@@ -8,10 +8,16 @@
 
 **Frontend:** [https://swaps.com.tr](https://swaps.com.tr)
 
+### 🎯 Hızlı Test için Demo Hesaplar:
+- **Kullanıcı Adı:** `user` | **Şifre:** `user`
+- **Kullanıcı Adı:** `test` | **Şifre:** `test`
+- **Admin:** `admin1@gmail.com` | **Şifre:** `admin-1`
+
 ---
 
 ## 📋 Özellikler
 
+- ✅ **HTML5 Semantic Markup**: Modern web standartları ile erişilebilir yapı
 - ✅ **Kullanıcı Yönetimi**: Kayıt, giriş ve profil ayarları
 - ✅ **Beceri Yönetimi**: Offering (sunulan) ve Seeking (aranan) beceriler
 - ✅ **Karşılıklı Eşleşme**: İki yönlü beceri eşleşmesi algoritması
@@ -23,9 +29,36 @@
 
 ---
 
+## 🌐 HTML5 Özellikleri
+
+Proje modern **HTML5 standartlarına** tam uyumludur:
+
+### Semantic HTML5 Elements
+- ✅ `<header>` - Sayfa başlıkları ve navigasyon
+- ✅ `<nav>` - Navigasyon menüleri
+- ✅ `<main>` - Ana içerik alanı
+- ✅ `<section>` - İçerik bölümleri
+- ✅ `<article>` - Bağımsız içerik blokları
+- ✅ `<footer>` - Sayfa alt bilgisi
+
+### HTML5 Form Features
+- ✅ `<input type="email">` - Email validasyonu
+- ✅ `<input type="password">` - Şifre alanları
+- ✅ `required` attribute - Zorunlu alan kontrolü
+- ✅ `aria-label` - Erişilebilirlik özellikleri
+
+### HTML5 Meta Tags
+- ✅ `<!DOCTYPE html>` - HTML5 deklarasyonu
+- ✅ `<meta charset="UTF-8">` - Karakter seti
+- ✅ `<meta name="viewport">` - Responsive tasarım
+- ✅ Open Graph meta tags - Sosyal medya entegrasyonu
+
+---
+
 ## 🛠️ Kullanılan Teknolojiler
 
 ### Frontend
+- **HTML5** - Semantic markup ve modern web standartları
 - **React 19.2.0** - Modern UI kütüphanesi
 - **Vite** - Hızlı geliştirme ortamı
 - **Material-UI (MUI) v7** - Modern komponent kütüphanesi
@@ -153,13 +186,30 @@ npm run dev
 
 ## 👤 Kullanıcı Giriş Bilgileri
 
-### Demo Admin Hesabı
+### Demo Kullanıcı Hesapları
+
+**Mock User 1:**
+```
+Kullanıcı Adı: user
+Şifre: user
+```
+
+**Mock User 2:**
+```
+Kullanıcı Adı: test
+Şifre: test
+```
+
+**Admin Hesabı:**
 ```
 Email: admin1@gmail.com
 Şifre: admin-1
 ```
 
-> **Not:** Demo için sisteme yeni kullanıcı kaydı yapabilirsiniz. Kayıt için herhangi bir doğrulama gerekmez.
+> **Not:** 
+> - Mock kullanıcılar için email alanına kullanıcı adını yazın (örn: "user")
+> - Demo için sisteme yeni kullanıcı kaydı da yapabilirsiniz
+> - Kayıt için herhangi bir doğrulama gerekmez
 
 ---
 
@@ -206,24 +256,26 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "email": "string",
-  "password": "string"
+  "email": "user",
+  "password": "user"
 }
 ```
 
 **Yanıt:**
 ```json
 {
-  "message": "Giris basarili!",
+  "message": "Giris basarili! (Demo User)",
   "user": {
-    "id": 1,
-    "username": "john_doe",
-    "email": "john@example.com",
+    "id": 100001,
+    "username": "user",
+    "email": "user@demo.com",
     "role": "user"
   },
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
+
+> **Not:** Mock kullanıcılar için email alanına kullanıcı adını yazın: `"user"` veya `"test"`
 
 ---
 
@@ -606,27 +658,33 @@ DELETE /api/admin/users/:userId
 
 ## 📱 Kullanım Senaryoları
 
-### 1. Yeni Kullanıcı Kaydı
+### 1. Hızlı Başlangıç (Mock Kullanıcı ile)
+1. Ana sayfada "Giriş Yap" butonuna tıklayın
+2. Email alanına: `user` yazın
+3. Şifre alanına: `user` yazın
+4. Giriş yapın ve platformu keşfedin!
+
+### 2. Yeni Kullanıcı Kaydı
 1. Ana sayfada "Kayıt Ol" butonuna tıklayın
 2. Kullanıcı adı, email ve şifre girin
 3. Otomatik olarak giriş yapılır ve token alınır
 
-### 2. Beceri Ekleme
+### 3. Beceri Ekleme
 1. Profil sayfasına gidin
 2. "Offering" (Sunduğunuz beceriler) veya "Seeking" (Aradığınız beceriler) sekmesini seçin
 3. Beceri ekleyin
 
-### 3. Eşleşme Bulma
+### 4. Eşleşme Bulma
 1. "Discover" sayfasına gidin
 2. Karşılıklı eşleşen kullanıcıları görüntüleyin
 3. İlgilendiğiniz kullanıcıya eşleşme isteği gönderin
 
-### 4. Proje Oluşturma
+### 5. Proje Oluşturma
 1. Dashboard'da "Yeni Proje" butonuna tıklayın
 2. Proje başlığı ve açıklama girin
 3. Diğer kullanıcılar projenize başvurabilir
 
-### 5. Mesajlaşma
+### 6. Mesajlaşma
 1. Eşleştiğiniz kullanıcıyla mesajlaşmak için "Messages" sayfasına gidin
 2. Konuşmayı başlatın veya devam ettirin
 
