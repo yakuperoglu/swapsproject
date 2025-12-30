@@ -1,6 +1,35 @@
 # SwapS - Beceri Takas Platformu
 
+<div align="center">
+
+![SwapS Banner](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&h=400&fit=crop)
+
+**Modern, hızlı ve güvenli beceri paylaşım ekosistemi.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-19.2.0-blue.svg)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20.x-green.svg)](https://nodejs.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+
+</div>
+
 **SwapS**, kullanıcıların becerilerini paylaşarak karşılıklı öğrenme ve işbirliği yapabileceği modern bir skill swap (beceri takas) platformudur. Kullanıcılar sahip oldukları becerileri sunabilir (Offering), ihtiyaç duydukları becerileri arayabilir (Seeking) ve karşılıklı eşleşmeler bularak projeler üzerinde işbirliği yapabilir.
+
+---
+
+## 🏗️ Sistem Mimarisi
+
+```mermaid
+graph TD
+    User((Kullanıcı)) -->|İstek| Frontend[React v19 + MUI]
+    Frontend -->|API Çağrısı| Backend[Node.js + Express]
+    Backend -->|JWT Doğrulama| Middleware[Auth Middleware]
+    Middleware -->|Veri İşleme| Controllers[Business Logic Controllers]
+    Controllers -->|Sorgu| DB[(PostgreSQL)]
+    DB -->|Sonuç| Controllers
+    Controllers -->|JSON Yanıt| Frontend
+    Frontend -->|Arayüz Güncelleme| User
+```
 
 ---
 
@@ -667,8 +696,6 @@ swapsproject/
 │   │   └── main.jsx
 │   ├── package.json
 │   └── vite.config.js
-│
-└── README.md
 ```
 
 ---
